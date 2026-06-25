@@ -81,27 +81,38 @@
     .btn-add { background: #1e1e1e; color: white; border: none; width: 55px; height: 55px; border-radius: 50%; font-size: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 /* --- MOBILE UPGRADES (2-COLUMN GRID) --- */
         @media (max-width: 768px) {
-            /* This forces 2 columns on phones */
-            #product-grid, .grid { 
+            /* FIXED: Now targeting your exact class name! */
+            .product-grid { 
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 10px !important;
-                padding: 10px !important;
             }
             
-            /* Make images a bit shorter so they don't stretch too tall */
-            .card img, .product-card img {
-                height: 140px !important; 
-                object-fit: cover;
+            /* Tighten up the cards to fit nicely side-by-side */
+            .product-card {
+                padding: 8px !important;
             }
 
-            /* Shrink text slightly so it fits beautifully side-by-side */
-            .card h3, .product-card h3 {
-                font-size: 14px !important;
-                margin-bottom: 5px;
+            /* Shrink the image box */
+            .img-wrapper {
+                height: 120px !important;
+                margin-bottom: 10px !important;
+            }
+
+            /* Shrink the image inside the box */
+            .img-wrapper img {
+                max-height: 100px !important; 
+            }
+
+            /* Shrink the text slightly */
+            .product-title {
+                font-size: 13px !important;
+                margin-bottom: 10px !important;
             }
             
-            .card p, .product-card p {
-                font-size: 12px !important;
+            /* Shrink the button slightly */
+            .btn-edit {
+                padding: 8px !important;
+                font-size: 11px !important;
             }
         }
 </style>
