@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Print Catalog - Hatimi Hardware</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #fff; color: #000; margin: 0; padding: 20px; }
+        .print-controls { text-align: center; margin-bottom: 30px; }
+        .btn-print { background: #b38728; color: white; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        
+        /* 5 Items in a row for Main Catalog */
+        .product-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        
+        .product-card { border: 1px solid #ccc; border-radius: 6px; padding: 8px; text-align: center; page-break-inside: avoid; }
+        .img-wrapper { width: 100%; height: 100px; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; }
+        .img-wrapper img { max-width: 90%; max-height: 90px; object-fit: contain; }
+        
+        .product-title { color: #000; font-size: 12px; font-weight: bold; margin-bottom: 5px; height: 30px; overflow: hidden; }
+        .product-price { color: #b38728; font-size: 14px; font-weight: 900; }
+/* --- UPGRADED PRINT SETTINGS (FIXES CUT BORDERS) --- */
+        * {
+            box-sizing: border-box; /* Stops borders from pushing outside the screen */
+        }
+
+        @media print {
+            /* This is the magic rule! It forces a 15mm safe zone on the paper */
+            @page {
+                size: A4 portrait;
+                margin: 15mm; 
+            }
+            
+            .print-controls { 
+                display: none !important; 
+            }
+            
+            body { 
+                padding: 0 !important; 
+                margin: 0 !important;
+                width: 100% !important;
+            }
+
+            .product-grid {
+                width: 100% !important;
+                padding: 2px !important; /* Tiny buffer so the outer border breathes */
+            }
+            
+            .product-card {
+                page-break-inside: avoid !important;
+                /* Forces a crisp black border for the printer instead of light grey */
+                border: 1px solid #333 !important; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-controls"><button class="btn-print" onclick="window.print()">🖨️ PRINT CUSTOMER CATALOG (5-COLUMN)</button></div>
+    <div id="print-container" class="product-grid"><h2 style="text-align:center; width:100%; grid-column: 1 / -1;">Loading Catalog...</h2></div>
+
+    <script>
+        // PASTE YOUR CSV LINK HERE
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqfLPTM9QCajpUToFw0B2UTKUIv-0d3P5ldQxLWKYfD98PPVf5ZEDXITZuTrdNPh8D8dDKcJxO1D4O/pub?gid=789817243&single=true&output=csv'; 
+        
+        async function loadPrintData() {
+            try {
+                const resp = await fetch(SHEET_URL + '&nocache=' + new Date().getTime());
+                const data = await resp.text();
+                const rows = data.split('\n').slice(1);
+                let html = "";
+
+                rows.forEach(row => {
+                    const c = row.split(','); 
+                    if(c.length < 5) return; 
+
+                    // UPDATE THESE NUMBERS TO MATCH YOUR SHEET COLUMNS
+                    const category = (c[0] || "").trim();
+                    const brand = (c[1] || "").trim();
+                    const name = (c[2] || "").trim();
+                    const sellingPrice = (c[6] || "0").trim(); // <--- Set to your Selling Price column
+
+                    const nClean = name.toLowerCase().replace(/[,\s./_]+/g, '-');
+                    const bClean = brand.toLowerCase().replace(/[,\s./_]+/g, '-');
+                    const cClean = category.toLowerCase().replace(/[,\s./_]+/g, '-');
+                    
+                    const paths = [ `fabrication-img/${bClean}-${nClean}.jpg`, `fabrication-img/${nClean}.jpg`, `fabrication-img/${bClean}.jpg`, `fabrication-img/${cClean}.jpg` ];
+                    const imgId = `img-${Math.random().toString(36).substr(2, 5)}`;
+
+                    html += `
+                    <div class="product-card">
+                        <div class="img-wrapper"><img id="${imgId}" src="https://placehold.co/150x150/fbfbfb/b38728?text=Loading"></div>
+                        <div class="product-title">${name}</div>
+                        <div class="product-price">₹${sellingPrice}</div>
+                    </div>`;
+
+                    setTimeout(() => tryLoadImage(imgId, paths), 20);
+                });
+                document.getElementById('print-container').innerHTML = html;
+            } catch (e) {
+                document.getElementById('print-container').innerHTML = "<h2>Error Loading Data</h2>";
+            }
+        }
+
+        function tryLoadImage(imgId, paths, index = 0) {
+            if (index >= paths.length) { document.getElementById(imgId).src = 'https://placehold.co/150x150/fbfbfb/cccccc?text=No+Image'; return; }
+            const img = new Image();
+            img.onload = () => document.getElementById(imgId).src = paths[index];
+            img.onerror = () => tryLoadImage(imgId, paths, index + 1);
+            img.src = paths[index];
+        }
+        loadPrintData();
+    </script>
+</body>
+</html>
