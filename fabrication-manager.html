@@ -79,6 +79,31 @@
     .fab-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; align-items: flex-end; z-index: 1000; }
     .btn-logout { background: #262626; color: white; border: none; padding: 10px 20px; border-radius: 25px; font-size: 12px; font-weight: bold; cursor: pointer; letter-spacing: 1px; }
     .btn-add { background: #1e1e1e; color: white; border: none; width: 55px; height: 55px; border-radius: 50%; font-size: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+/* --- MOBILE UPGRADES (2-COLUMN GRID) --- */
+        @media (max-width: 768px) {
+            /* This forces 2 columns on phones */
+            #product-grid, .grid { 
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+                padding: 10px !important;
+            }
+            
+            /* Make images a bit shorter so they don't stretch too tall */
+            .card img, .product-card img {
+                height: 140px !important; 
+                object-fit: cover;
+            }
+
+            /* Shrink text slightly so it fits beautifully side-by-side */
+            .card h3, .product-card h3 {
+                font-size: 14px !important;
+                margin-bottom: 5px;
+            }
+            
+            .card p, .product-card p {
+                font-size: 12px !important;
+            }
+        }
 </style>
 </head>
 <body>
