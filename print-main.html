@@ -4,108 +4,200 @@
     <meta charset="UTF-8">
     <title>Customer Print Catalog - Hatimi Hardware</title>
     <style>
+        * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #fff; color: #000; margin: 0; padding: 20px; }
-        .print-controls { text-align: center; margin-bottom: 30px; }
-        .btn-print { background: #b38728; color: white; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; }
         
-        /* 5 Items in a row for Main Catalog */
-        .product-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        /* -- Print Controls Bar -- */
+        .print-controls { 
+            display: flex; justify-content: center; align-items: center; gap: 15px;
+            margin-bottom: 20px; background: #f8f9fa; padding: 15px;
+            border-radius: 8px; border: 1px solid #ddd;
+        }
         
-        .product-card { border: 1px solid #ccc; border-radius: 6px; padding: 8px; text-align: center; page-break-inside: avoid; }
-        .img-wrapper { width: 100%; height: 100px; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; }
-        .img-wrapper img { max-width: 90%; max-height: 90px; object-fit: contain; }
+        .btn-print { background: #b38728; color: white; border: none; padding: 12px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .btn-print:hover { background: #8e6b1f; }
         
-        .product-title { color: #000; font-size: 12px; font-weight: bold; margin-bottom: 5px; height: 30px; overflow: hidden; }
-        .product-price { color: #b38728; font-size: 14px; font-weight: 900; }
-/* --- UPGRADED PRINT SETTINGS (FIXES CUT BORDERS) --- */
-        * {
-            box-sizing: border-box; /* Stops borders from pushing outside the screen */
+        .cat-dropdown { padding: 12px; font-size: 16px; border: 2px solid #1a2942; border-radius: 6px; font-weight: bold; color: #1a2942; cursor: pointer; }
+
+        /* -- Print Header -- */
+        .paper-header { display: none; }
+
+        /* -- Category Divider (Navy Blue & Gold) -- */
+        .category-divider {
+            grid-column: 1 / -1; 
+            background-color: #1a2942 !important; 
+            color: #ffffff !important;
+            border-bottom: 4px solid #b38728 !important;
+            text-align: center;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 15px;
+            border-radius: 4px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
-        @media print {
-            /* This is the magic rule! It forces a 15mm safe zone on the paper */
-            @page {
-                size: A4 portrait;
-                margin: 15mm; 
-            }
-            
-            .print-controls { 
-                display: none !important; 
-            }
-            
-            body { 
-                padding: 0 !important; 
-                margin: 0 !important;
-                width: 100% !important;
-            }
+        /* 5 Items in a row */
+        .product-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        
+        .product-card { 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            padding: 8px; 
+            text-align: center; 
+            page-break-inside: avoid; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .img-wrapper { width: 100%; height: 110px; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; }
+        .img-wrapper img { max-width: 95%; max-height: 100px; object-fit: contain; }
+        
+        .product-title { color: #1a2942; font-size: 13px; font-weight: 800; margin-bottom: 5px; line-height: 1.2; }
+        .product-price { color: #b38728; font-size: 15px; font-weight: 900; margin-top: auto; }
 
-            .product-grid {
-                width: 100% !important;
-                padding: 2px !important; /* Tiny buffer so the outer border breathes */
+        /* --- THE MAGIC PRINT RULES (Forcing Navy & Gold) --- */
+        @media print {
+            @page { size: A4 portrait; margin: 10mm; }
+            .print-controls { display: none !important; }
+            body { padding: 0 !important; width: 100% !important; }
+
+            .paper-header { 
+                display: block !important; text-align: center; margin-bottom: 15px; padding-bottom: 10px; 
+                border-bottom: 3px solid #b38728 !important; /* Gold Header Line */
             }
+            .paper-header h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 2px; color: #1a2942 !important; text-transform: uppercase; }
+            .paper-header p { margin: 2px 0 0 0; font-size: 14px; font-weight: bold; color: #b38728 !important; text-transform: uppercase; }
+
+            .product-grid { width: 100% !important; gap: 8px !important; }
             
-            .product-card {
-                page-break-inside: avoid !important;
-                /* Forces a crisp black border for the printer instead of light grey */
-                border: 1px solid #333 !important; 
-            }
+            /* Navy Blue borders for the printed cards */
+            .product-card { border: 2px solid #1a2942 !important; padding: 6px !important; }
+            
+            .product-title { font-size: 12px !important; color: #1a2942 !important; }
+            .product-price { font-size: 14px !important; color: #b38728 !important; }
         }
     </style>
 </head>
 <body>
-    <div class="print-controls"><button class="btn-print" onclick="window.print()">🖨️ PRINT CUSTOMER CATALOG (5-COLUMN)</button></div>
-    <div id="print-container" class="product-grid"><h2 style="text-align:center; width:100%; grid-column: 1 / -1;">Loading Catalog...</h2></div>
+    
+    <div class="print-controls">
+        <select id="category-filter" class="cat-dropdown" onchange="renderGrid()">
+            <option value="ALL">Show All Categories</option>
+        </select>
+        <button class="btn-print" onclick="window.print()">🖨️ PRINT CATALOG</button>
+    </div>
+
+    <div class="paper-header">
+        <h1>Hatimi Hardware</h1>
+        <p>Fabrication Catalog</p>
+    </div>
+
+    <div id="print-container" class="product-grid">
+        <h2 style="text-align:center; width:100%; grid-column: 1 / -1;">Loading Catalog...</h2>
+    </div>
 
     <script>
-        // PASTE YOUR CSV LINK HERE
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqfLPTM9QCajpUToFw0B2UTKUIv-0d3P5ldQxLWKYfD98PPVf5ZEDXITZuTrdNPh8D8dDKcJxO1D4O/pub?gid=789817243&single=true&output=csv'; 
         
+        let allProducts = []; 
+        let uniqueCategories = new Set();
+
         async function loadPrintData() {
             try {
                 const resp = await fetch(SHEET_URL + '&nocache=' + new Date().getTime());
                 const data = await resp.text();
                 const rows = data.split('\n').slice(1);
-                let html = "";
-
+                
                 rows.forEach(row => {
                     const c = row.split(','); 
-                    if(c.length < 5) return; 
+                    if(c.length < 3) return; 
 
-                    // UPDATE THESE NUMBERS TO MATCH YOUR SHEET COLUMNS
                     const category = (c[0] || "").trim();
                     const brand = (c[1] || "").trim();
                     const name = (c[2] || "").trim();
-                    const sellingPrice = (c[6] || "0").trim(); // <--- Set to your Selling Price column
+                    const sellingPrice = (c[6] || "0").trim(); // <-- CHANGE THIS NUMBER if your price is still ₹0
 
-                    const nClean = name.toLowerCase().replace(/[,\s./_]+/g, '-');
-                    const bClean = brand.toLowerCase().replace(/[,\s./_]+/g, '-');
-                    const cClean = category.toLowerCase().replace(/[,\s./_]+/g, '-');
-                    
-                    const paths = [ `fabrication-img/${bClean}-${nClean}.jpg`, `fabrication-img/${nClean}.jpg`, `fabrication-img/${bClean}.jpg`, `fabrication-img/${cClean}.jpg` ];
-                    const imgId = `img-${Math.random().toString(36).substr(2, 5)}`;
-
-                    html += `
-                    <div class="product-card">
-                        <div class="img-wrapper"><img id="${imgId}" src="https://placehold.co/150x150/fbfbfb/b38728?text=Loading"></div>
-                        <div class="product-title">${name}</div>
-                        <div class="product-price">₹${sellingPrice}</div>
-                    </div>`;
-
-                    setTimeout(() => tryLoadImage(imgId, paths), 20);
+                    if(category !== "") {
+                        uniqueCategories.add(category);
+                    }
+                    allProducts.push({ category, brand, name, sellingPrice });
                 });
-                document.getElementById('print-container').innerHTML = html;
+
+                const dropdown = document.getElementById('category-filter');
+                uniqueCategories.forEach(cat => {
+                    let option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = "Only " + cat;
+                    dropdown.appendChild(option);
+                });
+
+                renderGrid();
             } catch (e) {
-                document.getElementById('print-container').innerHTML = "<h2>Error Loading Data</h2>";
+                document.getElementById('print-container').innerHTML = "<h2 style='grid-column: 1/-1;'>Error Loading Data</h2>";
             }
         }
 
+        function renderGrid() {
+            const selectedCategory = document.getElementById('category-filter').value;
+            let html = "";
+            let categoriesToPrint = selectedCategory === "ALL" ? Array.from(uniqueCategories) : [selectedCategory];
+
+            categoriesToPrint.forEach(cat => {
+                let categoryProducts = allProducts.filter(p => p.category === cat);
+                
+                if (categoryProducts.length > 0) {
+                    html += `<div class="category-divider">${cat}</div>`;
+
+                    categoryProducts.forEach(product => {
+                        // FIXED: Safely handles empty brands without adding weird dashes!
+                        const nClean = product.name ? product.name.toLowerCase().replace(/[,\s./_]+/g, '-') : '';
+                        const bClean = product.brand ? product.brand.toLowerCase().replace(/[,\s./_]+/g, '-') : '';
+                        const combo = bClean ? `${bClean}-${nClean}` : nClean;
+                        
+                        // FIXED: Now it also checks for the Item Code (HT67, HT62, etc.)
+                        const paths = [ 
+                            `fabrication-img/${combo}.jpg`, 
+                            `fabrication-img/${combo}.JPG`, 
+                            `fabrication-img/${combo}.png`, 
+                            `fabrication-img/${nClean}.jpg`, 
+                            `fabrication-img/${nClean}.JPG`, 
+                            `fabrication-img/${nClean}.png`,
+                            `fabrication-img/${bClean}.jpg`, 
+                            `fabrication-img/${bClean}.JPG`, 
+                            `fabrication-img/${bClean}.png`
+                        ];
+                        const imgId = `img-${Math.random().toString(36).substr(2, 5)}`;
+
+                        html += `
+                        <div class="product-card">
+                            <div class="img-wrapper"><img id="${imgId}" src="https://placehold.co/150x150/fbfbfb/1a2942?text=Loading"></div>
+                            <div class="product-title">${product.name}</div>
+                            <div class="product-price">₹${product.sellingPrice}</div>
+                        </div>`;
+
+                        setTimeout(() => tryLoadImage(imgId, paths), 20);
+                    });
+                }
+            });
+
+            document.getElementById('print-container').innerHTML = html;
+        }
+
         function tryLoadImage(imgId, paths, index = 0) {
-            if (index >= paths.length) { document.getElementById(imgId).src = 'https://placehold.co/150x150/fbfbfb/cccccc?text=No+Image'; return; }
+            const el = document.getElementById(imgId);
+            if (!el) return; 
+            if (index >= paths.length) { el.src = 'https://placehold.co/150x150/fbfbfb/cccccc?text=No+Image'; return; }
             const img = new Image();
-            img.onload = () => document.getElementById(imgId).src = paths[index];
+            img.onload = () => el.src = paths[index];
             img.onerror = () => tryLoadImage(imgId, paths, index + 1);
             img.src = paths[index];
         }
+
         loadPrintData();
     </script>
 </body>
