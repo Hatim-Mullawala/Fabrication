@@ -97,7 +97,7 @@
         <h2 style="text-align:center; width:100%;">Loading Manager Data...</h2>
     </div>
 
-    <script>
+   <script>
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqfLPTM9QCajpUToFw0B2UTKUIv-0d3P5ldQxLWKYfD98PPVf5ZEDXITZuTrdNPh8D8dDKcJxO1D4O/pub?gid=789817243&single=true&output=csv'; 
         
         let allProducts = []; 
@@ -126,15 +126,11 @@
                     allProducts.push({ category, brand, name, mrp, sellingPrice, lastUpdated });
                 });
 
-                // Generate Checkboxes
                 const checkboxContainer = document.getElementById('category-checkboxes');
-                
-                // Add a "Select All" toggle
                 let html = `<label class="checkbox-label" style="background:#1a2942; color:white;">
                                 <input type="checkbox" id="selectAll" checked onchange="toggleAll(this)"> SELECT ALL
                             </label>`;
                 
-                // Add individual category checkboxes
                 uniqueCategories.forEach(cat => {
                     html += `<label class="checkbox-label">
                                 <input type="checkbox" class="cat-checkbox" value="${cat}" checked onchange="renderGrid()"> ${cat}
@@ -149,7 +145,6 @@
             }
         }
 
-        // Magic function to check/uncheck everything at once
         function toggleAll(selectAllBox) {
             const checkboxes = document.querySelectorAll('.cat-checkbox');
             checkboxes.forEach(box => box.checked = selectAllBox.checked);
@@ -157,9 +152,11 @@
         }
 
         function renderGrid() {
-            // Find out which checkboxes the user has clicked
             const checkedBoxes = document.querySelectorAll('.cat-checkbox:checked');
             const selectedCategories = Array.from(checkedBoxes).map(box => box.value);
+            
+            // Automatic Date Generation
+            const today = new Date().toLocaleDateString('en-GB');
 
             let html = "";
             let printedCategoriesCount = 0;
@@ -169,13 +166,10 @@
                 return;
             }
 
-            // Only loop through the checked categories
             selectedCategories.forEach(cat => {
                 let categoryProducts = allProducts.filter(p => p.category === cat);
                 
                 if (categoryProducts.length > 0) {
-                    
-                    // Keeps the page breaks between categories!
                     let breakClass = printedCategoriesCount > 0 ? "force-page-break" : "";
                     
                     html += `<div class="${breakClass}">`;
@@ -196,7 +190,7 @@
 
                         html += `
                         <div class="product-card">
-                            <div class="date-text">Upd: ${product.lastUpdated}</div>
+                            <div class="date-text">Printed: ${today}</div>
                             <div class="img-wrapper"><img id="${imgId}" src="https://placehold.co/150x150/fbfbfb/1a2942?text=Loading"></div>
                             
                             <div class="brand-text">${product.brand}</div>
