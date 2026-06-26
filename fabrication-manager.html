@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a2942">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Fabrication Manager</title>
@@ -543,5 +545,10 @@ if (formToSave) {
             <button onclick="closeViewModal()" style="width:100%; padding:14px; background:#f1f5f9; color:#1e293b; font-weight:800; border:none; border-radius:8px; cursor:pointer; font-size:14px; text-transform:uppercase;">CLOSE WINDOW</button>
         </div>
     </div>
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+</script>
 </body>
 </html>

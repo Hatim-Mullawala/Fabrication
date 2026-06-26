@@ -1,0 +1,15 @@
+{
+  "name": "Hatimi Hardware",
+  "short_name": "Hatimi",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a2942",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3208/3208758.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

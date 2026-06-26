@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <link rel="manifest" href="manifest.json">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a2942">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Hatimi Hardware">
     <meta name="theme-color" content="#b38728">
@@ -1276,6 +1276,11 @@ loadFabricationData();
     document.getElementById('adminPassInput').addEventListener("keypress", function(e) { 
         if (e.key === "Enter") verifyAdmin(); 
     });
+</script>
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
 </script>
 </body>
 </html>

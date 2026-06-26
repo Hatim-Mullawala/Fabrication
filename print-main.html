@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a2942">
     <meta charset="UTF-8">
     <title>Customer Print Catalog - Hatimi Hardware</title>
     <style>
@@ -200,5 +202,10 @@
 
         loadPrintData();
     </script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+</script>
 </body>
 </html>
