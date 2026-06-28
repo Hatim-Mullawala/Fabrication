@@ -536,29 +536,33 @@ function openModal(encN, encC, encP, isAutoHinge) {
 function makeEditable(rowId, encB, encN, encS, oldMrp, oldRate) {
     const row = document.getElementById(rowId);
     
-    // Clean, crisp styles matching your screenshot
+    // THE FIX: Decode the text and safely escape all double quotes!
+    const cleanBrand = decodeURIComponent(encB).replace(/"/g, '&quot;');
+    const cleanSize = decodeURIComponent(encS).replace(/"/g, '&quot;');
+
+    // Clean, crisp styles
     const textStyle = "width:100%; max-width:90px; padding:6px 8px; border:2px solid #b38728; border-radius:4px; font-weight:bold; font-size:12px; color:#333; outline:none; box-sizing:border-box;";
     const priceStyle = "width:100%; max-width:70px; padding:6px 8px; border:2px solid #10b981; border-radius:4px; font-weight:bold; font-size:12px; color:#333; outline:none; box-sizing:border-box;";
 
-    // 1. Brand (Gold Border)
-    row.cells[0].innerHTML = `<input type="text" id="edit-brand-${rowId}" value="${decodeURIComponent(encB)}" style="${textStyle}">`;
+    // 1. Brand 
+    row.cells[0].innerHTML = `<input type="text" id="edit-brand-${rowId}" value="${cleanBrand}" style="${textStyle}">`;
     
-    // 2. Size (Gold Border)
-    row.cells[1].innerHTML = `<input type="text" id="edit-size-${rowId}" value="${decodeURIComponent(encS)}" style="${textStyle}">`;
+    // 2. Size (Now uses the cleanSize variable so inch marks stay!)
+    row.cells[1].innerHTML = `<input type="text" id="edit-size-${rowId}" value="${cleanSize}" style="${textStyle}">`;
     
-    // 3. MRP (Green Border with Rupee symbol outside)
+    // 3. MRP 
     row.cells[2].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#b38728;">
             ₹ <input type="number" id="edit-mrp-${rowId}" value="${oldMrp}" style="${priceStyle}">
         </div>`;
     
-    // 4. Selling Rate (Green Border with Rupee symbol outside)
+    // 4. Selling Rate 
     row.cells[3].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#27ae60;">
             ₹ <input type="number" id="edit-rate-${rowId}" value="${oldRate}" style="${priceStyle}">
         </div>`;
     
-    // 5. Actions (SAVE and X matching your screenshot)
+    // 5. Actions
     row.cells[4].innerHTML = `
         <div style="display: flex; gap: 6px; justify-content: flex-end;">
             <button onclick="saveInLine('${rowId}', '${encB}', '${encN}', '${encS}')" 
