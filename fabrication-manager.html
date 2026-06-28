@@ -386,7 +386,7 @@ console.log("First product imgUrl:", products[0]?.imgUrl);
 
     for (const p of filtered) {
         const catName = String(p.cat);
-        const key = `${catName}|${p.name}|${p.brand}`;
+       const key = `${catName}|${p.name}|${p.brand}|${p.rowId || Math.random()}`;
         
         if (!seen.has(key)) {
             if (catName !== currentCat) {
@@ -486,56 +486,60 @@ function openModal(encN, encC, encP, isAutoHinge) {
 
     let collectedSizes = [];
     variants.forEach((v, idx) => {
-        String(v.specs || "").split(/[,，\n|]+/).forEach((s, sIdx) => {
-            if (!s.trim()) return;
-            const prices = String(v.mrp || "0").split(/[,，\n|]+/);
-            const mMRP = (prices[sIdx] || prices[0]).trim();
-            collectedSizes.push({ brand: v.brand, pName: v.name, cleanS: s.trim(), v: v, matchedMRP: mMRP, rowId: `row-${idx}-${sIdx}` });
-        });
+        const specs = String(v.specs || "").split(/[,，\n|]+/);
+        
+        // FIX: If no specs exist, create one "empty" entry so the row shows up!
+        if (specs.length === 0 || (specs.length === 1 && !specs[0].trim())) {
+            collectedSizes.push({ brand: v.brand, pName: v.name, cleanS: "", v: v, matchedMRP: v.mrp || "0", rowId: `row-${idx}-empty` });
+        } else {
+            specs.forEach((s, sIdx) => {
+                if (!s.trim()) return;
+                const prices = String(v.mrp || "0").split(/[,，\n|]+/);
+                const mMRP = (prices[sIdx] || prices[0] || "0").trim();
+                collectedSizes.push({ brand: v.brand, pName: v.name, cleanS: s.trim(), v: v, matchedMRP: mMRP, rowId: `row-${idx}-${sIdx}` });
+            });
+        }
     });
 
     // Simple sorting by size
     collectedSizes.sort((a, b) => a.cleanS.localeCompare(b.cleanS, undefined, { numeric: true }));
 
     collectedSizes.forEach(item => {
-    const encB = encodeURIComponent(item.brand).replace(/'/g, "%27");
-    const encN2 = encodeURIComponent(item.v.name).replace(/'/g, "%27");
-    const encS = encodeURIComponent(item.cleanS).replace(/'/g, "%27");
-    
-    // Grab the selling rate (ensure 'sellingRate' matches your sheet header)
-    const sellingRate = item.v.sellingrate || "0"; 
+        const encB = encodeURIComponent(item.brand).replace(/'/g, "%27");
+        const encN2 = encodeURIComponent(item.v.name).replace(/'/g, "%27");
+        const encS = encodeURIComponent(item.cleanS).replace(/'/g, "%27");
+        const sellingRate = item.v.sellingrate || "0"; 
+        
+        // Display "-" if specs are empty, otherwise show the spec
+        const displayS = item.cleanS || "-"; 
 
-   tbody.innerHTML += `
-<tr id="${item.rowId}" style="border-bottom:1px solid #f1f5f9; display: flex; align-items: center; width: 100%;">
+        tbody.innerHTML += `
+        <tr id="${item.rowId}" style="border-bottom:1px solid #f1f5f9; display: flex; align-items: center; width: 100%;">
+            <td style="padding:12px; flex: 1.5; text-align: left; color:#b38728; font-weight:800; font-size:12px; text-transform:uppercase;">
+                ${item.brand}
+            </td>
+            <td style="padding:12px; flex: 1; text-align: left; font-weight:700; font-size:12px; color:#334155;">
+                ${displayS}
+            </td>
+            <td style="padding:12px; flex: 1; text-align: center; color: #b38728; font-weight:700; font-size:13px;">
+                ₹${item.matchedMRP}
+            </td>
+            <td class="rate-cell" style="padding:12px; flex: 1; text-align: center; font-weight:700; color:#10b981; font-size:13px;">
+                ₹${sellingRate}
+            </td>
+            <td style="padding:12px; flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+                <span class="action-icon edit-icon" style="cursor:pointer; color:#b38728; transition: 0.2s;" 
+                      onclick="makeEditable('${item.rowId}', '${encB}', '${encN2}', '${encS}', '${item.matchedMRP}', '${sellingRate}')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </span>
+                <span class="action-icon delete-icon" style="cursor:pointer; color:#ef4444; transition: 0.2s;" 
+                      onclick="deleteRowSafe('${encB}', '${encN2}', '${encS}', '${item.rowId}')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </span>
+            </td>
+        </tr>`;
+    });
     
-    <td style="padding:12px; flex: 1.5; text-align: left; color:#b38728; font-weight:800; font-size:12px; text-transform:uppercase;">
-        ${item.brand}
-    </td>
-    
-    <td style="padding:12px; flex: 1; text-align: left; font-weight:700; font-size:12px; color:#334155;">
-        ${item.cleanS}
-    </td>
-    
-    <td style="padding:12px; flex: 1; text-align: center; color: #b38728; font-weight:700; font-size:13px;">
-        ₹${item.matchedMRP}
-    </td>
-    
-    <td class="rate-cell" style="padding:12px; flex: 1; text-align: center; font-weight:700; color:#10b981; font-size:13px;">
-        ₹${sellingRate}
-    </td>
-    
-    <td style="padding:12px; flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
-        <span class="action-icon edit-icon" style="cursor:pointer; color:#b38728; transition: 0.2s;" 
-              onclick="makeEditable('${item.rowId}', '${encB}', '${encN2}', '${encS}', '${item.matchedMRP}', '${sellingRate}')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-        </span>
-        <span class="action-icon delete-icon" style="cursor:pointer; color:#ef4444; transition: 0.2s;" 
-              onclick="deleteRowSafe('${encB}', '${encN2}', '${encS}', '${item.rowId}')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-        </span>
-    </td>
-</tr>`;
-});
     document.getElementById('priceModal').style.display = "flex";
 }
 function makeEditable(rowId, encB, encN, encS, oldMrp, oldRate) {
@@ -729,16 +733,30 @@ async function executeFinalDelete() {
     deleteTimeout = null;
 }
 
-function deleteRowSafe(encB, encN, encS, rowId) {
-    const size = decodeURIComponent(encS);
-    askBeforeDelete("Remove Size?", `Remove "${size}"?`, () => {
-        const row = document.getElementById(rowId); 
-        if(row) {
-            row.style.opacity = '0';
-            setTimeout(() => { row.style.display = 'none'; }, 300);
-        }
-        showUndoToast("Size removed", { type: 'row', brand: decodeURIComponent(encB), name: decodeURIComponent(encN), size: size, id: rowId });
-    });
+async function deleteRowSafe(encB, encN, encS, rowId) {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+        await fetch(webAppUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify({
+                action: "deleteRow", // This MUST match the action in your Apps Script
+                brand: decodeURIComponent(encB),
+                name: decodeURIComponent(encN),
+                size: decodeURIComponent(encS)
+            })
+        });
+
+        // If successful, remove the row visually without refreshing
+        const row = document.getElementById(rowId);
+        if (row) row.remove();
+        
+    } catch (error) {
+        console.error("Delete Error:", error);
+        alert("Could not delete the product.");
+    }
 }
 
 function deleteProductGroup(encN, encC, encP, isAutoHinge, cardId) {
