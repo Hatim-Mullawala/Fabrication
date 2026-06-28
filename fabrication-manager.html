@@ -124,6 +124,48 @@
     box-shadow: 0 4px 10px rgba(179,135,40,0.2);
     border-color: #b38728;
 }   
+/* Professional Input Styling */
+#modalTableBody input {
+    width: 90%;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+#modalTableBody input:focus {
+    outline: none;
+    border-color: #b38728; /* Gold accent */
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(179, 135, 40, 0.1);
+}
+
+#priceModal thead tr {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
+}
+/* Apply this to both the Header and the Rows */
+.price-modal-table {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr; /* 1.5fr for Brand, 1fr for others */
+    align-items: center;
+    width: 100%;
+}
+#priceModal td, #priceModal th {
+    width: 20%; /* Distributes 100% equally across 5 columns */
+    text-align: center;
+    overflow: hidden;
+}
+/* Add this to force alignment */
+#modalTableBody tr, #priceModal thead tr {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr; /* Brand gets more space */
+    align-items: center;
+}
     </style>
 </head>
 <body>
@@ -218,17 +260,29 @@
         <h2 id="modalTitle" style="color: var(--primary-gold); margin-top: 10px;"></h2>
         <p id="modalBrand" style="font-weight: bold; color: #666; margin-bottom: 15px;"></p>
         <table class="modal-table">
-            <thead>
-                <tr style="text-align:left; border-bottom:2px solid #ddd;">
-                    <th style="padding:10px;">Brand</th>
-                    <th style="padding:10px;">Size / Specs</th>
-                    <th style="padding:10px;">MRP (₹)</th>
-                    <th style="padding:10px; text-align:right;">Actions</th>
-                </tr>
-            </thead>
+           <thead style="display: block; width: 100%;">
+    <tr style="display: flex; align-items: center; border-bottom: 2px solid #eee; width: 100%;">
+        <th style="padding:12px; flex: 1.5; text-align: left; font-size: 13px; color: #333;">Brand</th>
+        <th style="padding:12px; flex: 1; text-align: left; font-size: 13px; color: #333;">Size</th>
+        
+        <th style="padding:12px; flex: 1; text-align: center; font-size: 13px; color: #333;">MRP</th>
+        <th style="padding:12px; flex: 1; text-align: center; font-size: 13px; color: #333; white-space: nowrap;">Selling Rate</th>
+        
+        <th style="padding:12px; flex: 1; text-align: right; font-size: 13px; color: #333;">Actions</th>
+    </tr>
+</thead>
             <tbody id="modalTableBody"></tbody>
         </table>
-        <button onclick="closeAllModals()" class="btn-view" style="background:#eee; color:#333; margin-top:20px;">CLOSE WINDOW</button>
+        
+        <div style="margin-top: 20px; text-align: center; border-top: 1px solid #ddd; padding-top: 15px;">
+            <label for="mobile-upload" style="background:#222; color:white; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; display:inline-block; transition: 0.3s;">
+                📸 UPLOAD NEW PHOTO
+            </label>
+            <input type="file" id="mobile-upload" accept="image/*" style="display:none;" onchange="uploadPhotoFromMobile()">
+            <p id="upload-status" style="font-size:13px; color:#b38728; margin-top:10px; font-weight:bold; display:none;">Uploading...</p>
+        </div>
+        
+        <button onclick="closeAllModals()" class="btn-view" style="background:#eee; color:#333; margin-top:15px;">CLOSE WINDOW</button>
     </div>
 </div>
 
@@ -248,7 +302,7 @@
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqfLPTM9QCajpUToFw0B2UTKUIv-0d3P5ldQxLWKYfD98PPVf5ZEDXITZuTrdNPh8D8dDKcJxO1D4O/pub?gid=789817243&single=true&output=csv';
 // !!! GOOGLE APPS SCRIPT URL !!!
 // !!! GOOGLE APPS SCRIPT URL !!!
-const webAppUrl = 'https://script.google.com/macros/s/AKfycbzwp9DrWWDWOt6NoJsHLIBlxBkrILaOvzAxwHszitLLzxoKg6hPpwywdO7TQheB9lLL/exec';
+const webAppUrl = 'https://script.google.com/macros/s/AKfycbzY-7qlDdd6F0eAO1bkLU5H7CjMfjw-42FTJKcwRqGiksESI8LJIx9Gds3uUBjuKFbS/exec';
 
 let allProducts = [], uniqueBrands = [], uniqueNames = [];
 let deleteTimeout = null, lastDeletedData = null;
@@ -278,7 +332,8 @@ function handleGoogleResponse(response) {
             brand: String(entry['brand'] || "").trim(),
             name: String(entry['product name'] || "").trim(),
             specs: String(entry['specifications'] || "").trim(),
-            mrp: String(entry['mrp'] || "").trim() || "0",
+            mrp: String(entry['mrp'] || entry['MRP'] || entry['Mrp'] || entry['mrp '] || entry['MRP '] || "").trim() || "0",
+            imgUrl: String(entry['image'] || entry['Image'] || entry['IMAGE'] || "").trim(),
             tag: String(entry['tag'] || "").trim(),
             series: String(entry['series'] || "").trim() // Restored for bundling
         };
@@ -309,6 +364,8 @@ function filterCategoryCards(filterType, btn) {
     });
 }
 async function renderManagerCatalog(products) {
+    // Add this line inside renderManagerCatalog at the very top:
+console.log("First product imgUrl:", products[0]?.imgUrl);
     const container = document.getElementById('catalog-container');
     if (!container) return;
 
@@ -316,7 +373,6 @@ async function renderManagerCatalog(products) {
     const seen = new Set();
     let currentCat = "";
     let html = "";
-
     const filtered = products.filter(p => p.rawSearch.includes(searchTerm));
     filtered.sort((a, b) => a.cat.localeCompare(b.cat));
 
@@ -331,11 +387,21 @@ async function renderManagerCatalog(products) {
                 html += `<div class="category-group" style="margin-bottom: 40px;"><h2 class="category-header">${currentCat}</h2><div class="product-grid">`; 
             }
 
-            const nClean = String(p.name).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
-            const bClean = String(p.brand).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
-            
-            // POINTING TO FABRICATION FOLDER
-            const paths = [`fabrication-img/${bClean}-${nClean}.jpg`, `fabrication-img/${nClean}.jpg`, `fabrication-img/${bClean}.jpg`];
+           // This forces "HT155 " to become "ht155", matching your local file name
+const bClean = String(p.brand).toLowerCase().replace(/[^a-z0-9]/g, ''); 
+const nClean = String(p.name).toLowerCase().replace(/[^a-z0-9]/g, '');
+                        // POINTING TO FABRICATION FOLDER
+            // Find the "const paths = ..." line in renderManagerCatalog and replace it with this:
+            const paths = p.imgUrl ? [p.imgUrl] : [
+    `fabrication-img/${bClean}-${nClean}.jpg`, 
+    `fabrication-img/${nClean}.jpg`,
+    `fabrication-img/${bClean}.jpg`, // Added: Looks for just the Brand Name (e.g., ht155.jpg)
+    
+    // Optional but recommended: PNG fallbacks just in case!
+    `fabrication-img/${bClean}-${nClean}.png`,
+    `fabrication-img/${nClean}.png`,
+    `fabrication-img/${bClean}.png`
+];
             const imgId = `img-${Math.random().toString(36).substr(2, 5)}`;
             const encN = encodeURIComponent(p.name);
             const encC = encodeURIComponent(catName);
@@ -363,10 +429,22 @@ function tryLoadImage(idOrElement, urls) {
     const imgElement = typeof idOrElement === 'string' ? document.getElementById(idOrElement) : idOrElement;
     if (!imgElement) return;
 
+    // Check if we have a Google Drive link (starts with http)
+    const driveUrl = urls.find(u => u.startsWith('http'));
+    
+    if (driveUrl) {
+        // If it's a Drive link, load it immediately and stop
+        imgElement.src = driveUrl;
+        imgElement.onerror = () => {
+            imgElement.src = 'https://placehold.co/150x150/f8fafc/b38728?text=Error';
+        };
+        return;
+    }
+
+    // If no Drive link, proceed with your existing local file logic
     let expandedUrls = [];
     urls.forEach(u => {
         expandedUrls.push(u);
-        // Automatically checks for PNG if JPG fails and vice versa
         if (u.endsWith('.jpg')) expandedUrls.push(u.replace('.jpg', '.png'));
         if (u.endsWith('.png')) expandedUrls.push(u.replace('.png', '.jpg'));
     });
@@ -375,6 +453,7 @@ function tryLoadImage(idOrElement, urls) {
     function attemptLoad() {
         if (index < expandedUrls.length) {
             const imgTester = new Image();
+            // Important: Use expandedUrls[index] instead of index-1
             imgTester.onload = () => { imgElement.src = expandedUrls[index - 1]; };
             imgTester.onerror = attemptLoad;
             imgTester.src = expandedUrls[index++];
@@ -414,84 +493,167 @@ function openModal(encN, encC, encP, isAutoHinge) {
     collectedSizes.sort((a, b) => a.cleanS.localeCompare(b.cleanS, undefined, { numeric: true }));
 
     collectedSizes.forEach(item => {
-        const encB = encodeURIComponent(item.brand).replace(/'/g, "%27");
-        const encN2 = encodeURIComponent(item.v.name).replace(/'/g, "%27");
-        const encS = encodeURIComponent(item.cleanS).replace(/'/g, "%27");
+    const encB = encodeURIComponent(item.brand).replace(/'/g, "%27");
+    const encN2 = encodeURIComponent(item.v.name).replace(/'/g, "%27");
+    const encS = encodeURIComponent(item.cleanS).replace(/'/g, "%27");
+    
+    // Grab the selling rate (ensure 'sellingRate' matches your sheet header)
+    const sellingRate = item.v.sellingrate || "0"; 
 
-        tbody.innerHTML += `
-        <tr id="${item.rowId}" style="border-bottom:1px solid #eee;">
-            <td style="padding:12px; color:#b38728; font-weight:800; font-size:11px; text-transform:uppercase;">${item.brand}</td>
-            <td class="size-cell" style="padding:12px; font-weight:700;">${item.cleanS}</td>
-            <td class="mrp-cell" style="padding:12px; color: #b38728; font-weight:bold;">₹${item.matchedMRP}</td>
-            <td style="text-align: right; white-space: nowrap;">
-                <span class="action-icon edit-icon" style="cursor:pointer; margin-right:15px; color:#b38728;" onclick="makeEditable('${item.rowId}', '${encB}', '${encN2}', '${encS}', '${item.matchedMRP}')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                </span>
-                <span class="action-icon delete-icon" style="cursor:pointer; color:#e74c3c;" onclick="deleteRowSafe('${encB}', '${encN2}', '${encS}', '${item.rowId}')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                </span>
-            </td>
-        </tr>`;
-    });
+   tbody.innerHTML += `
+<tr id="${item.rowId}" style="border-bottom:1px solid #f1f5f9; display: flex; align-items: center; width: 100%;">
+    
+    <td style="padding:12px; flex: 1.5; text-align: left; color:#b38728; font-weight:800; font-size:12px; text-transform:uppercase;">
+        ${item.brand}
+    </td>
+    
+    <td style="padding:12px; flex: 1; text-align: left; font-weight:700; font-size:12px; color:#334155;">
+        ${item.cleanS}
+    </td>
+    
+    <td style="padding:12px; flex: 1; text-align: center; color: #b38728; font-weight:700; font-size:13px;">
+        ₹${item.matchedMRP}
+    </td>
+    
+    <td class="rate-cell" style="padding:12px; flex: 1; text-align: center; font-weight:700; color:#10b981; font-size:13px;">
+        ₹${sellingRate}
+    </td>
+    
+    <td style="padding:12px; flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+        <span class="action-icon edit-icon" style="cursor:pointer; color:#b38728; transition: 0.2s;" 
+              onclick="makeEditable('${item.rowId}', '${encB}', '${encN2}', '${encS}', '${item.matchedMRP}', '${sellingRate}')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        </span>
+        <span class="action-icon delete-icon" style="cursor:pointer; color:#ef4444; transition: 0.2s;" 
+              onclick="deleteRowSafe('${encB}', '${encN2}', '${encS}', '${item.rowId}')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+        </span>
+    </td>
+</tr>`;
+});
     document.getElementById('priceModal').style.display = "flex";
 }
-function makeEditable(rowId, encB, encN, encS, oldMrp) {
-    const row = document.getElementById(rowId), oldSize = decodeURIComponent(encS), safeInput = oldSize.replace(/"/g, '&quot;');
-    row.querySelector('.size-cell').innerHTML = `<input type="text" id="edit-size-${rowId}" value="${safeInput}" style="width:100px; padding:6px; border:2px solid #b38728; border-radius:4px; font-weight:bold;">`;
-    row.querySelector('.mrp-cell').innerHTML = `₹<input type="number" id="edit-mrp-${rowId}" value="${oldMrp}" style="width:60px; padding:6px; border:2px solid #16a34a; border-radius:4px; font-weight:bold;">`;
-    row.querySelector('td:last-child').innerHTML = `
-        <button type="button" onclick="saveInLine('${rowId}', '${encB}', '${encN}', '${encS}')" style="background:#10b981; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;">SAVE</button>
-        <button type="button" onclick="cancelEditSafe('${rowId}', '${encS}', '${oldMrp}', '${encB}', '${encN}')" style="background:#94a3b8; color:white; border:none; padding:8px 10px; border-radius:4px; cursor:pointer; margin-left:3px; font-size:11px;">X</button>`;
-}
+function makeEditable(rowId, encB, encN, encS, oldMrp, oldRate) {
+    const row = document.getElementById(rowId);
+    
+    // Clean, crisp styles matching your screenshot
+    const textStyle = "width:100%; max-width:90px; padding:6px 8px; border:2px solid #b38728; border-radius:4px; font-weight:bold; font-size:12px; color:#333; outline:none; box-sizing:border-box;";
+    const priceStyle = "width:100%; max-width:70px; padding:6px 8px; border:2px solid #10b981; border-radius:4px; font-weight:bold; font-size:12px; color:#333; outline:none; box-sizing:border-box;";
 
+    // 1. Brand (Gold Border)
+    row.cells[0].innerHTML = `<input type="text" id="edit-brand-${rowId}" value="${decodeURIComponent(encB)}" style="${textStyle}">`;
+    
+    // 2. Size (Gold Border)
+    row.cells[1].innerHTML = `<input type="text" id="edit-size-${rowId}" value="${decodeURIComponent(encS)}" style="${textStyle}">`;
+    
+    // 3. MRP (Green Border with Rupee symbol outside)
+    row.cells[2].innerHTML = `
+        <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#b38728;">
+            ₹ <input type="number" id="edit-mrp-${rowId}" value="${oldMrp}" style="${priceStyle}">
+        </div>`;
+    
+    // 4. Selling Rate (Green Border with Rupee symbol outside)
+    row.cells[3].innerHTML = `
+        <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#27ae60;">
+            ₹ <input type="number" id="edit-rate-${rowId}" value="${oldRate}" style="${priceStyle}">
+        </div>`;
+    
+    // 5. Actions (SAVE and X matching your screenshot)
+    row.cells[4].innerHTML = `
+        <div style="display: flex; gap: 6px; justify-content: flex-end;">
+            <button onclick="saveInLine('${rowId}', '${encB}', '${encN}', '${encS}')" 
+                    style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer; letter-spacing:0.5px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                SAVE
+            </button>
+            <button onclick="location.reload()" 
+                    style="background:#94a3b8; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                X
+            </button>
+        </div>`;
+}
 async function saveInLine(rowId, encB, encN, encS) {
     const row = document.getElementById(rowId);
-    const newSize = document.getElementById(`edit-size-${rowId}`).value;
-    const newMrp = document.getElementById(`edit-mrp-${rowId}`).value;
-    
-    // Debug: Check what data is being sent
-    console.log("Saving:", { rowId, newSize, newMrp });
+    const actionCell = row.cells[4]; // The last column (Actions)
 
-    row.querySelector('td:last-child').innerHTML = `<span style="color:#b38728; font-weight:bold; font-size:11px;">SYNCING...</span>`;
+    // Change button to SYNCING...
+    actionCell.innerHTML = `<span style="color:#b38728; font-weight:bold; font-size:11px;">SYNCING...</span>`;
 
     try {
-        const response = await fetch(webAppUrl, { 
-            method: "POST", 
-            mode: "no-cors", 
+        // 1. Grab the new values from the inputs
+        const newBrand = document.getElementById(`edit-brand-${rowId}`).value;
+        const newSize = document.getElementById(`edit-size-${rowId}`).value;
+        const newMrp = document.getElementById(`edit-mrp-${rowId}`).value;
+        const newRate = document.getElementById(`edit-rate-${rowId}`).value;
+
+        // 2. Send data to Google Apps Script (Fire and Forget)
+        fetch(webAppUrl, {
+            method: "POST",
+            mode: "no-cors",
             headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify({ 
-                action: "updateRow", 
-                brand: decodeURIComponent(encB), 
-                name: decodeURIComponent(encN), 
-                oldSize: decodeURIComponent(encS), 
-                newSize: newSize, 
-                newPrice: newMrp 
+            body: JSON.stringify({
+                action: "updateRow",
+                oldBrand: decodeURIComponent(encB),
+                name: decodeURIComponent(encN),
+                oldSize: decodeURIComponent(encS),
+                newBrand: newBrand,
+                newSize: newSize,
+                newPrice: newMrp,
+                newRate: newRate
             })
         });
 
-        // Update UI immediately
-        row.querySelector('.size-cell').innerText = newSize; 
-        row.querySelector('.mrp-cell').innerText = "₹" + newMrp;
-        
-        // Return to normal icon state
-        cancelEditSafe(rowId, encodeURIComponent(newSize).replace(/'/g, "%27"), newMrp, encB, encN);
-        showToast("Database Updated", "success");
-        
+        // 3. Wait half a second, then Update UI WITHOUT refreshing
+        setTimeout(() => {
+            // Encode the new data so you can edit it again immediately
+            const newEncB = encodeURIComponent(newBrand).replace(/'/g, "%27");
+            const newEncS = encodeURIComponent(newSize).replace(/'/g, "%27");
+
+            // A. Update the text on the screen instantly
+            row.cells[0].innerHTML = newBrand;
+            row.cells[1].innerHTML = newSize;
+            row.cells[2].innerHTML = `₹${newMrp}`;
+            row.cells[3].innerHTML = `₹${newRate}`;
+
+            // B. Bring back the Edit & Trash Icons (Updating them with the new data)
+            actionCell.innerHTML = `
+                <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+                    <span class="action-icon edit-icon" style="cursor:pointer; color:#b38728; transition: 0.2s;" 
+                          onclick="makeEditable('${rowId}', '${newEncB}', '${encN}', '${newEncS}', '${newMrp}', '${newRate}')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </span>
+                    <span class="action-icon delete-icon" style="cursor:pointer; color:#ef4444; transition: 0.2s;" 
+                          onclick="deleteRowSafe('${newEncB}', '${encN}', '${newEncS}', '${rowId}')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </span>
+                </div>`;
+
+            // C. Show your Toast message
+            if (typeof showToast === "function") {
+                showToast("Database Updated", "success");
+            }
+
+            // D. QUIET BACKGROUND SYNC (Fixes Manager Mode not showing changes)
+            // This pulls the fresh data from the Sheet into memory without reloading the page
+            const script = document.createElement('script');
+            script.src = `${webAppUrl}?callback=handleGoogleResponse&t=${Date.now()}`;
+            document.body.appendChild(script);
+
+        }, 600); // 600ms delay to make the "SYNCING..." text visible briefly
+
     } catch (error) {
         console.error("Save Error:", error);
-        showToast("Save Failed!", "error");
-        row.querySelector('td:last-child').innerHTML = `<span style="color:red;">ERROR</span>`;
+        actionCell.innerHTML = `<span style="color:red; font-weight:bold; font-size:11px;">ERROR</span>`;
     }
 }
 function cancelEditSafe(rowId, encS, oldMrp, encB, encN) {
     const row = document.getElementById(rowId);
+    row.querySelector('td:nth-child(1)').innerText = decodeURIComponent(encB).toUpperCase();
     row.querySelector('.size-cell').innerText = decodeURIComponent(encS); 
     row.querySelector('.mrp-cell').innerText = "₹" + oldMrp;
     row.querySelector('td:last-child').innerHTML = `
         <span class="action-icon edit-icon" onclick="makeEditable('${rowId}', '${encB}', '${encN}', '${encS}', '${oldMrp}')"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/></svg></span>
         <span class="action-icon delete-row-icon" onclick="deleteRowSafe('${encB}', '${encN}', '${encS}', '${rowId}')"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></span>`;
 }
-
 function showUndoToast(message, actionData) {
     if (deleteTimeout) executeFinalDelete();
     lastDeletedData = actionData;
@@ -702,7 +864,53 @@ async function handleAddProduct(event) {
         btn.innerText = "Add to Inventory"; btn.disabled = false; 
     }
 }
+async function uploadPhotoFromMobile() {
+    const fileInput = document.getElementById('mobile-upload');
+    const statusText = document.getElementById('upload-status');
+    if (!fileInput.files.length) return;
+    
+    const file = fileInput.files[0];
+    const brand = document.getElementById('modalBrand').innerText;
+    const name = document.getElementById('modalTitle').innerText;
+    
+    statusText.style.display = "block";
+    statusText.innerText = "Processing...";
 
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const fileData = e.target.result.split(',')[1];
+        
+        try {
+            const response = await fetch(webAppUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                redirect: 'follow',
+                body: JSON.stringify({
+                    action: "updateImage",
+                    brand: brand,
+                    name: name,
+                    fileData: fileData,
+                    mimeType: file.type,
+                    filename: `${brand}-${name}.jpg`
+                })
+            });
+
+            const result = await response.json(); // Wait for the server to talk back
+            console.log("Server response:", result);
+            
+            if (result.result === "success") {
+                statusText.innerText = "✅ Upload Successful!";
+                showToast("Photo Updated!", "success");
+            } else {
+                statusText.innerText = "❌ Error: " + result.message;
+            }
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            statusText.innerText = "❌ Upload Failed.";
+        }
+    };
+    reader.readAsDataURL(file);
+}
 function logout() { sessionStorage.removeItem('managerAuth'); window.location.href = "index.html"; }
 function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
 window.onscroll = () => document.getElementById("backToTop").style.display = (window.scrollY > 300) ? "flex" : "none";
