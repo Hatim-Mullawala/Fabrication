@@ -1,555 +1,715 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1a2942">
-<link rel="icon" type="image/png" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Fabrication Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fabricataion Manager - Hatimi Hardware</title>
     <style>
-    :root { --primary-gold: #b38728; --navy: #1e293b; --bg-light: #f4f7f6; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-light); margin: 0; padding: 20px; }
+        :root { --primary-gold: #b38728; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
 
-    /* --- Top Search Bar --- */
-    .top-search-container { text-align: center; margin-bottom: 25px; }
-    .top-search-container input { 
-        width: 100%; max-width: 600px; padding: 12px 20px; 
-        border: 1px solid var(--primary-gold); border-radius: 25px; 
-        font-size: 14px; outline: none; color: #555;
-    }
+        .search-container { background: white; padding: 15px 0; display: flex; justify-content: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1000; }
+        .search-box { width: 90%; max-width: 700px; padding: 12px 25px; border: 1.5px solid var(--primary-gold); border-radius: 50px; font-size: 16px; outline: none; }
 
-    /* --- Main White Wrapper --- */
-    .main-wrapper { 
-        max-width: 1200px; margin: 0 auto; background: #fff; 
-        padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
-    }
+        .main-wrapper { max-width: 1300px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.06); }
+        .catalog-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 3px solid var(--primary-gold); margin-bottom: 20px; }
+        .logo-img { height: 80px !important; width: auto; display: block; object-fit: contain; }
+        .brand-name { margin: 0; font-size: 28px; font-weight: 800; color: #b38728; text-transform: uppercase; }
+        
+        .category-header { background: #222; color: #fff; padding: 12px 20px; font-size: 18px; font-weight: 700; text-transform: uppercase; margin-top: 30px; border-left: 8px solid var(--primary-gold); border-radius: 4px; margin-bottom: 15px; }
+        
+        /* THE PILL BUTTON STYLES */
+        .catalog-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-btn { background: white; color: #333; border: 1.5px solid var(--primary-gold); padding: 6px 18px; border-radius: 25px; font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        .filter-btn:hover { background: #fdfaf3; transform: translateY(-2px); }
+        .filter-btn.active { background: var(--primary-gold); color: white; box-shadow: 0 4px 10px rgba(179,135,40,0.3); }
 
-    /* --- Header Area --- */
-    .header-container { 
-        display: flex; justify-content: space-between; align-items: center; 
-        border-bottom: 2px solid var(--primary-gold); padding-bottom: 20px; margin-bottom: 20px; 
-    }
-    .header-left { display: flex; align-items: center; gap: 15px; }
-    .header-logo { width: 50px; height: 50px; object-fit: contain; }
-    .header-text h1 { color: var(--primary-gold); font-size: 22px; font-weight: 900; margin: 0; letter-spacing: 1px; }
-    .header-text p { color: #64748b; font-size: 13px; font-weight: 700; margin: 4px 0 0 0; }
-    .refresh-btn { cursor: pointer; color: var(--primary-gold); font-size: 20px; background: none; border: none; transition: 0.3s; }
-    .refresh-btn:hover { transform: rotate(180deg); }
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 0 15px 0; }
+        @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .product-grid { grid-template-columns: repeat(5, 1fr); gap: 15px; } }
 
-    /* --- Category Header --- */
-    .category-header { 
-        background: #262626; color: white; padding: 12px 20px; 
-        font-size: 15px; font-weight: 800; text-transform: uppercase; 
-        border-left: 5px solid var(--primary-gold); margin-top: 30px; margin-bottom: 20px; border-radius: 4px; 
-    }
+        .product-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center; position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; height: 300px; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: var(--primary-gold); }
 
-    /* --- Perfect Grid & Card --- */
-    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 20px; }
-    
-    .product-card { 
-        border: 1px solid #f0f0f0; border-radius: 8px; padding: 12px; 
-        display: flex; flex-direction: column; align-items: center; 
-        position: relative; transition: 0.3s; background: #fff; 
-    }
-    .product-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.06); }
+        .btn-delete { position: absolute; top: 10px; right: 10px; border: none; background: #fee2e2; padding: 6px; border-radius: 4px; cursor: pointer; z-index: 10; }
 
-    /* Square Pink Trash Button */
-    .btn-trash { 
-        position: absolute; top: 12px; right: 12px; 
-        background: #fce8e8; color: #d9534f; border: none; 
-        width: 26px; height: 26px; border-radius: 4px; 
-        font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 10;
-    }
+        .img-holder { height: 130px; width: 100%; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; background: #fbfbfb; border-radius: 8px; overflow: hidden; }
+        .img-holder img { max-height: 110px; max-width: 90%; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.05)); }
 
-    .img-wrapper { 
-        background: #fbfbfb; width: 100%; height: 160px; 
-        display: flex; justify-content: center; align-items: center; 
-        border-radius: 8px; margin-bottom: 15px; 
-    }
-    .img-wrapper img { max-width: 85%; max-height: 120px; object-fit: contain; }
+        .brand-tag { font-size: 11px; letter-spacing: 1px; font-weight: 900; color: #b38728; text-transform: uppercase; margin-top: 5px; }
+        .item-name { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 10px; height: 40px; display: flex; align-items: center; justify-content: center; }
 
-    .brand-text { color: var(--primary-gold); font-size: 11px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; }
-    .product-title { color: var(--navy); font-size: 15px; font-weight: 800; margin-bottom: 15px; text-align: center; }
+        .btn-view { background: var(--primary-gold); color: white; padding: 12px; border-radius: 8px; font-weight: bold; border: none; margin-top: auto; width: 100%; cursor: pointer; text-transform: uppercase; }
 
-    .btn-edit { 
-        background: #b8860b; color: white; border: none; width: 100%; 
-        padding: 12px; border-radius: 6px; font-size: 12px; font-weight: 800; 
-        cursor: pointer; margin-top: auto; text-transform: uppercase;
-    }
+        .side-controls { position: fixed; bottom: 30px; right: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 5000; }
+        .ctrl-btn { width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-logout { background: linear-gradient(135.5deg, #444 0%, #222 100%); color: #fff; border: none; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .btn-add { background: #222; color: white; font-size: 32px; }
 
-    /* --- Floating Action Buttons (Right Corner) --- */
-    .fab-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; align-items: flex-end; z-index: 1000; }
-    .btn-logout { background: #262626; color: white; border: none; padding: 10px 20px; border-radius: 25px; font-size: 12px; font-weight: bold; cursor: pointer; letter-spacing: 1px; }
-    .btn-add { background: #1e1e1e; color: white; border: none; width: 55px; height: 55px; border-radius: 50%; font-size: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-/* --- MOBILE UPGRADES (2-COLUMN GRID) --- */
-        @media (max-width: 768px) {
-            /* FIXED: Now targeting your exact class name! */
-            .product-grid { 
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 10px !important;
-            }
+        .modal { display: none; position: fixed; z-index: 9999 !important; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 95%; max-width: 600px; padding: 25px; border-radius: 15px; position: relative; max-height: 85vh; overflow-y: auto; }
+        .close-modal { position: absolute; right: 15px; top: 10px; font-size: 30px; cursor: pointer; color: #888; z-index: 10001; }
+        
+        .modal-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .modal-table td { vertical-align: middle; padding: 12px 8px; }
+        .action-icon { cursor: pointer; padding: 5px; border-radius: 4px; display: inline-flex; }
+        .edit-icon { color: #b38728; margin-right: 10px; }
+        .delete-row-icon { color: #e74c3c; }
+
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9998; }
+        #addProductModal { display: none; position: fixed; z-index: 9999; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 440px; background: #ffffff; padding: 30px; border-radius: 16px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+        .input-group input, .input-group select { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; box-sizing: border-box; }
+        
+        .confirm-modal { display: none; position: fixed; z-index: 20000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; }
+        .confirm-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; }
+        .btn-confirm { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-yes { background: #e74c3c; color: white; }
+        .btn-no { background: #eee; color: #333; }
+        
+        .btn-logout { transition: all 0.3s ease; }
+        .btn-logout:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); background: linear-gradient(135.5deg, #b38728 0%, #8e6a20 100%); }
+        .ctrl-btn { transition: all 0.3s ease; }
+        .ctrl-btn:hover { transform: scale(1.1); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .btn-add:hover { background: var(--primary-gold); color: white; transform: scale(1.1) rotate(90deg); }
+
+        .last-sync { text-align: center; font-size: 13px; color: #888; padding: 20px; margin-top: 10px; border-top: 1px solid #eee; }
+
+        @media screen and (max-width: 768px) {
+            .main-wrapper { padding: 15px; margin: 10px; }
+            .catalog-header { flex-direction: column; text-align: center; }
+            .brand-name { font-size: 26px; }
+            .search-box { width: 90%; }
             
-            /* Tighten up the cards to fit nicely side-by-side */
-            .product-card {
-                padding: 8px !important;
+            .modal-content {
+                width: 100% !important; height: 100vh !important; max-height: 100vh !important;
+                border-radius: 0 !important; padding: 40px 2px 80px 2px !important; margin: 0 !important;
             }
-
-            /* Shrink the image box */
-            .img-wrapper {
-                height: 120px !important;
-                margin-bottom: 10px !important;
+            .close-modal {
+                position: fixed !important; top: 10px !important; right: 15px !important;
+                background: #fff; color: #e74c3c !important; width: 35px; height: 35px;
+                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                font-size: 28px !important; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10001;
             }
-
-            /* Shrink the image inside the box */
-            .img-wrapper img {
-                max-height: 100px !important; 
+            .modal-table {
+                display: table !important; width: 100% !important; 
+                table-layout: fixed !important; border-collapse: collapse;
             }
-
-            /* Shrink the text slightly */
-            .product-title {
-                font-size: 13px !important;
-                margin-bottom: 10px !important;
+            .modal-table th, .modal-table td {
+                padding: 12px 2px !important; font-size: 11px !important; 
+                word-wrap: break-word !important; white-space: normal !important;
             }
-            
-            /* Shrink the button slightly */
-            .btn-edit {
-                padding: 8px !important;
-                font-size: 11px !important;
-            }
+            .modal-table th:nth-child(1), .modal-table td:nth-child(1) { width: 25%; }
+            .modal-table th:nth-child(2), .modal-table td:nth-child(2) { width: 35%; text-align: left; font-weight: bold; font-size: 12px !important; }
+            .modal-table th:nth-child(3), .modal-table td:nth-child(3) { width: 20%; }
+            .modal-table th:nth-child(4), .modal-table td:nth-child(4) { width: 20%; text-align: right; }
+            .modal-table input[type="text"], .modal-table input[type="number"] { width: 100% !important; font-size: 11px !important; padding: 4px !important; box-sizing: border-box; }
         }
-        .circular-btn {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%; /* This makes it a perfect circle */
-    border: 1px solid #d1d9e6; /* Soft border matching your screenshot */
-    background: #fff;
+        .icon-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%; /* Makes them circular */
+    border: 1px solid #e2e8f0; /* Light gray border */
+    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: 0.3s;
 }
-
-.circular-btn:hover {
-    background: #f8f9fa;
-    border-color: #b38728; /* Highlights gold on hover */
-}
-</style>
+.icon-btn:hover {
+    box-shadow: 0 4px 10px rgba(179,135,40,0.2);
+    border-color: #b38728;
+}   
+    </style>
 </head>
 <body>
 
-    <!-- Top Centered Search Bar -->
-    <div class="top-search-container">
-        <input type="text" id="searchInput" placeholder="Search Inventory (Name, Brand, Tags...)" onkeyup="filterManagerProducts()">
-    </div>
-
-    <!-- Main Content Wrapper -->
-    <div class="main-wrapper">
-        
-        <!-- Header area exactly like screenshot -->
-        <div class="header-container">
-            <div class="header-left">
-                <!-- Replace with your actual logo link if needed -->
-                <img src="https://placehold.co/100x100/f8fafc/b38728?text=LOGO" alt="Logo" class="header-logo">
-                <div class="header-text">
-                    <h1>HATIMI HARDWARE</h1>
-                    <p>Fabrication Inventory Control Panel</p>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-    
-    <button class="circular-btn" onclick="location.reload()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b38728" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 2v6h-6"></path>
-            <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
-            <path d="M3 22v-6h6"></path>
-            <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
-        </svg>
-    </button>
-
-    <button class="circular-btn" onclick="window.open('print-manager.html', '_blank')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b38728" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2"/>
-            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-            <rect x="6" y="14" width="12" height="7"/>
-        </svg>
-    </button>
-
-</div>
-        </div>
-
-
-        <!-- The area where Javascript will draw the grid -->
-        <div id="catalog-container"></div>
-        
-    </div>
-
-    <!-- The Floating Buttons -->
-    <div class="fab-container">
-        <button class="btn-logout" onclick="window.location.href='index.html'">LOGOUT</button>
-        <button class="btn-add" onclick="openInputModal()">+</button>
-    </div>
-
-    <!-- (Keep your existing Input Modal code here) -->
-    <div id="inputModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index: 2000;">
-    <div style="background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 12px; position:relative;">
-        <h2 id="modalAction" style="color:#b38728;">Add Product</h2>
-        
-        <form id="productForm" action="https://script.google.com/macros/s/AKfycbzPFvVZrvjAPMIqx_KI8ddAh3tr4EvWGYsRzls2YtbFKjhKCJGBULXAc2vYQ6kgwLQU/exec">
-            
-            <input type="hidden" id="rowId" name="rowId" value="-1">
-            <input type="hidden" id="specs" name="specs" value="">
-
-            <div class="form-group"><input type="text" id="cat" name="cat" placeholder="Category" required></div>
-            <div class="form-group"><input type="text" id="brand" name="brand" placeholder="Brand" required></div>
-            <div class="form-group"><input type="text" id="name" name="name" placeholder="Product Name" required></div>
-            <div class="form-group"><input type="text" id="mrp" name="mrp" placeholder="MRP" required></div>
-            
-            <button type="submit" class="btn-edit" style="width:100%; margin-top:15px;">SAVE PRODUCT</button>
-            <button type="button" onclick="closeModal()" style="width:100%; margin-top:10px; border:none; background:none; color:red; cursor:pointer;">CANCEL</button>
-        </form>
-    </div>
-</div>
-    <script>
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqfLPTM9QCajpUToFw0B2UTKUIv-0d3P5ldQxLWKYfD98PPVf5ZEDXITZuTrdNPh8D8dDKcJxO1D4O/pub?gid=789817243&single=true&output=csv'; // Ensure this is your link!
-    let allProducts = [];
-
-    // 1. Fetch and Load
-    async function loadData() {
-        try {
-            const resp = await fetch(SHEET_URL + '&nocache=' + new Date().getTime());
-            const data = await resp.text();
-            const rows = data.split('\n').slice(1);
-            allProducts = rows.map(row => {
-                const c = row.split(','); // Simplified for manager, use parseCSVLine if needed
-                return { cat: c[0], brand: c[1], name: c[2], mrp: c[5] };
-            });
-            renderManagerGrid();
-        } catch (e) { console.error("Load Failed:", e); }
+<script>
+    if (sessionStorage.getItem('managerAuth') !== 'true') {
+        const p = prompt("Manager Password:");
+        if (p === "hatimi786") { sessionStorage.setItem('managerAuth', 'true'); }
+        else { window.location.href = "index.html"; }
     }
-function renderManagerGrid() {
+</script>
+
+<div class="search-container">
+    <input type="text" id="inventory-search" class="search-box" placeholder="Search Inventory (Name, Brand, Tags...)" oninput="renderManagerCatalog(allProducts)">
+</div>
+
+<div class="main-wrapper">
+    <header class="catalog-header">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <img src="logo.png" class="logo-img" alt="Logo" onerror="this.src='https://placehold.co/80'">
+            <div>
+                <h1 class="brand-name">Hatimi Hardware</h1>
+                <p style="margin:0; font-weight:bold; color:#666;">Fabrication Inventory Control Panel</p>
+            </div>
+        </div>
+       <div style="display: flex; align-items: center; gap: 15px;">
+    <!-- Refresh Button -->
+    <button class="icon-btn" onclick="location.reload()" title="Refresh">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b38728" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+        </svg>
+    </button>
+    
+    <!-- Print Button -->
+    <button class="icon-btn" onclick="window.open('print-manager.html', '_blank')" title="Print">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b38728" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+    </button>
+</div>
+    </header>
+    
+    <div id="catalog-container">Opening Fabrication Inventory...</div>
+    <div class="last-sync" id="syncStatus">Fetching latest inventory data...</div>
+</div>
+
+<div class="side-controls">
+    <button class="btn-logout" onclick="logout()">LOGOUT</button>
+    <button class="ctrl-btn btn-add" onclick="toggleAddModal()">+</button>
+    <button id="backToTop" class="ctrl-btn" onclick="scrollToTop()" style="display:none; background:#b38728; color:white;">↑</button>
+</div>
+
+<div id="modalBackdrop" class="modal-backdrop" onclick="toggleAddModal()"></div>
+
+<div id="addProductModal">
+    <span class="close-modal" onclick="toggleAddModal()">&times;</span>
+    <h3 style="margin-top:0;">Add Fabrication Fitting</h3>
+    <form id="addProductForm" onsubmit="handleAddProduct(event)">
+        <div class="input-group">
+            <label>Category</label>
+            <select name="cat" id="newCat" required><option value="">Select Category</option></select>
+        </div>
+        <div class="input-group">
+            <label>Brand</label>
+            <input type="text" id="newBrand" placeholder="Brand Name" required autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label>Product Name</label>
+            <input type="text" id="newName" placeholder="Product Name" required autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label>Specifications</label>
+            <input type="text" id="newSpecs" placeholder="e.g., 6 inch, 100g, Soft Close" required>
+        </div>
+        <div class="input-group">
+            <label>MRP Price (₹)</label>
+            <input type="number" id="newMrp" placeholder="0.00" required>
+        </div>
+        <button type="submit" id="submitBtn" class="btn-view" style="margin-top:10px;">Add to Inventory</button>
+    </form>
+    <div class="input-group">
+    <label>Product Image</label>
+    <input type="file" id="new-product-file" accept="image/*" style="padding: 8px;">
+</div>
+</div>
+
+<div id="priceModal" class="modal" onclick="if(event.target == this) closeAllModals()">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeAllModals()">&times;</span>
+        <h2 id="modalTitle" style="color: var(--primary-gold); margin-top: 10px;"></h2>
+        <p id="modalBrand" style="font-weight: bold; color: #666; margin-bottom: 15px;"></p>
+        <table class="modal-table">
+            <thead>
+                <tr style="text-align:left; border-bottom:2px solid #ddd;">
+                    <th style="padding:10px;">Brand</th>
+                    <th style="padding:10px;">Size / Specs</th>
+                    <th style="padding:10px;">MRP (₹)</th>
+                    <th style="padding:10px; text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="modalTableBody"></tbody>
+        </table>
+        <button onclick="closeAllModals()" class="btn-view" style="background:#eee; color:#333; margin-top:20px;">CLOSE WINDOW</button>
+    </div>
+</div>
+
+<div id="customConfirmModal" class="confirm-modal">
+    <div class="confirm-content">
+        <div style="font-size: 50px; color: #e74c3c; margin-bottom: 15px;">⚠️</div>
+        <h3 id="confirmTitle" style="margin:0; color:#222;">Are you sure?</h3>
+        <p id="confirmText" style="color:#666; margin:10px 0;"></p>
+        <div style="display: flex; gap: 10px; margin-top: 25px;">
+            <button class="btn-confirm btn-no" onclick="closeConfirm()">Cancel</button>
+            <button id="confirmYesBtn" class="btn-confirm btn-yes">Yes, Delete</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqfLPTM9QCajpUToFw0B2UTKUIv-0d3P5ldQxLWKYfD98PPVf5ZEDXITZuTrdNPh8D8dDKcJxO1D4O/pub?gid=789817243&single=true&output=csv';
+// !!! GOOGLE APPS SCRIPT URL !!!
+// !!! GOOGLE APPS SCRIPT URL !!!
+const webAppUrl = 'https://script.google.com/macros/s/AKfycbzwp9DrWWDWOt6NoJsHLIBlxBkrILaOvzAxwHszitLLzxoKg6hPpwywdO7TQheB9lLL/exec';
+
+let allProducts = [], uniqueBrands = [], uniqueNames = [];
+let deleteTimeout = null, lastDeletedData = null;
+
+function loadManagerData() {
+    const container = document.getElementById('catalog-container');
+    container.innerHTML = "<div style='text-align:center; padding:50px; font-weight:bold; color:#b38728;'>Opening Fabrication Inventory...</div>";
+    const script = document.createElement('script');
+    script.src = `${webAppUrl}?callback=handleGoogleResponse&t=${Date.now()}`;
+    script.onerror = () => {
+        container.innerHTML = "<p style='text-align:center; color:red; padding:50px;'>Connection Error. Please check WebApp URL.</p>";
+        document.getElementById('syncStatus').innerHTML = "<span style='color:red;'>🔴 Sync Failed. Check Connection.</span>";
+    };
+    document.body.appendChild(script);
+}
+
+function handleGoogleResponse(response) {
+    let rawData = [];
+    if (Array.isArray(response)) { rawData = response; } 
+    else if (response && response.data) { rawData = response.data; }
+
+    allProducts = rawData.map(entry => {
+        const fullRowString = Object.values(entry).join(" ").toLowerCase().replace(/"/g, '');
+        return {
+            rawSearch: fullRowString,
+            cat: String(entry['category'] || "").trim() || "General",
+            brand: String(entry['brand'] || "").trim(),
+            name: String(entry['product name'] || "").trim(),
+            specs: String(entry['specifications'] || "").trim(),
+            mrp: String(entry['mrp'] || "").trim() || "0",
+            tag: String(entry['tag'] || "").trim(),
+            series: String(entry['series'] || "").trim() // Restored for bundling
+        };
+    });
+    
+    populateCats(allProducts);
+    populateSuggestions(allProducts);
+    renderManagerCatalog(allProducts); 
+    document.getElementById('syncStatus').innerHTML = `🟢 Live Database Sync: <b>${new Date().toLocaleString()}</b>`;
+}
+
+// THE NEW FILTER SYSTEM FOR AUTO-GENERATED TABS
+function filterCategoryCards(filterType, btn) {
+    const filterContainer = btn.parentElement;
+    filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const grid = filterContainer.nextElementSibling;
+    const cards = grid.querySelectorAll('.product-card');
+
+    cards.forEach(card => {
+        const searchText = card.getAttribute('data-search') || "";
+        if (filterType === 'All' || searchText.includes(filterType.toLowerCase())) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+async function renderManagerCatalog(products) {
     const container = document.getElementById('catalog-container');
     if (!container) return;
 
-    let html = "";
+    const searchTerm = document.getElementById('inventory-search')?.value.toLowerCase().replace(/"/g, '') || "";
+    const seen = new Set();
     let currentCat = "";
+    let html = "";
 
-    // Sort by Category, then Name
-    const sortedProducts = [...allProducts].sort((a, b) => {
-        const catA = String(a.cat || "").trim().toLowerCase();
-        const catB = String(b.cat || "").trim().toLowerCase();
-        if (catA !== catB) return catA.localeCompare(catB);
-        const nameA = String(a.name || "").trim().toLowerCase();
-        const nameB = String(b.name || "").trim().toLowerCase();
-        return nameA.localeCompare(nameB);
-    });
+    const filtered = products.filter(p => p.rawSearch.includes(searchTerm));
+    filtered.sort((a, b) => a.cat.localeCompare(b.cat));
 
-    sortedProducts.forEach((p) => {
-        const catName = String(p.cat || "").trim();
+    for (const p of filtered) {
+        const catName = String(p.cat);
+        const key = `${catName}|${p.name}|${p.brand}`;
         
-        // Build the Dark Category Header
-        if (catName !== currentCat) {
-            if (html !== "") html += `</div>`; // Close previous grid
-            currentCat = catName;
-            html += `<div class="category-header">${currentCat}</div>
-                     <div class="product-grid">`; 
+        if (!seen.has(key)) {
+            if (catName !== currentCat) {
+                if (html !== "") html += `</div></div>`;
+                currentCat = catName;
+                html += `<div class="category-group" style="margin-bottom: 40px;"><h2 class="category-header">${currentCat}</h2><div class="product-grid">`; 
+            }
+
+            const nClean = String(p.name).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
+            const bClean = String(p.brand).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
+            
+            // POINTING TO FABRICATION FOLDER
+            const paths = [`fabrication-img/${bClean}-${nClean}.jpg`, `fabrication-img/${nClean}.jpg`, `fabrication-img/${bClean}.jpg`];
+            const imgId = `img-${Math.random().toString(36).substr(2, 5)}`;
+            const encN = encodeURIComponent(p.name);
+            const encC = encodeURIComponent(catName);
+            const encP = encodeURIComponent(p.brand);
+            const cardId = `card-${Math.random().toString(36).substr(2, 9)}`;
+
+            html += `
+            <div class="product-card" id="${cardId}" data-search="${p.rawSearch}">
+                <button onclick="deleteProductGroup('${encN}', '${encC}', '${encP}', false, '${cardId}')" class="btn-delete"><img src="https://cdn-icons-png.flaticon.com/512/1214/1214428.png" style="width:14px;"></button>
+                <div class="img-holder"><img id="${imgId}" src="https://placehold.co/150x150/f8fafc/b38728?text=Loading..."></div>
+                <div class="card-info">
+                    <div class="brand-tag">${p.brand}</div>
+                    <div class="item-name">${p.name}</div>
+                </div>
+                <button class="btn-view" onclick="openModal('${encN}', '${encC}', '${encP}', false)">EDIT / VIEW</button>
+            </div>`;
+
+            setTimeout(() => { if(typeof tryLoadImage === 'function') tryLoadImage(imgId, paths); }, 50);
+            seen.add(key);
         }
+    }
+    container.innerHTML = html !== "" ? html + "</div></div>" : "<p>No items found.</p>";
+}
+function tryLoadImage(idOrElement, urls) {
+    const imgElement = typeof idOrElement === 'string' ? document.getElementById(idOrElement) : idOrElement;
+    if (!imgElement) return;
 
-        const nClean = String(p.name).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
-        const bClean = String(p.brand).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
-        const cClean = String(p.cat).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
-        const imgId = `mgr-img-${Math.random().toString(36).substr(2, 5)}`;
-        
-        // --- UPGRADED SMART IMAGE SEARCH ---
-        const paths = [
-            `fabrication-img/${bClean}-${nClean}.jpg`, // 1. Looks for the specific brand+product (pidilite-heatx.jpg)
-            `fabrication-img/${nClean}.jpg`,           // 2. Looks for just the product name (heatx.jpg)
-            `fabrication-img/${bClean}.jpg`,           // 3. ✨ NEW: Fallback to just the Brand name! (pidilite.jpg)
-            `fabrication-img/${cClean}.jpg`            // 4. ✨ NEW: Fallback to just the Category name! (adhesives.jpg)
-        ];
-
-        const originalIndex = allProducts.indexOf(p);
-
-        // Build the card exactly like the screenshot
-        html += `
-        <div class="product-card" data-search="${p.name.toLowerCase()} ${p.brand.toLowerCase()}">
-            <!-- Pink Square Trash Icon -->
-            <button class="btn-trash" onclick="deleteProduct(${originalIndex})" title="Delete">🗑️</button>
-            
-            <div class="img-wrapper">
-                <img id="${imgId}" src="https://placehold.co/300x300/fbfbfb/b38728?text=Loading...">
-            </div>
-            
-            <div class="brand-text">${p.brand}</div>
-            <div class="product-title">${p.name}</div>
-            
-            <!-- Solid Gold Edit Button -->
-            <button class="btn-edit" onclick="openInputModal(${originalIndex})">EDIT / VIEW</button>
-        </div>`;
-
-        setTimeout(() => { if(typeof tryLoadImage === 'function') tryLoadImage(imgId, paths, p.name); }, 20);
+    let expandedUrls = [];
+    urls.forEach(u => {
+        expandedUrls.push(u);
+        // Automatically checks for PNG if JPG fails and vice versa
+        if (u.endsWith('.jpg')) expandedUrls.push(u.replace('.jpg', '.png'));
+        if (u.endsWith('.png')) expandedUrls.push(u.replace('.png', '.jpg'));
     });
 
-    if (html !== "") html += "</div>"; 
-    container.innerHTML = html;
-}
-
-// Add this quick function to make your new Search Bar work!
-function filterManagerProducts() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('.product-card').forEach(card => {
-        const text = card.getAttribute('data-search');
-        card.style.display = text.includes(q) ? "flex" : "none";
-    });
-}
-let editingIndex = -1; 
-
-function openInputModal(index = -1) {
-    editingIndex = index; 
-
-    if (index >= 0) {
-        // --- VIEW / EDIT TABLE MODE ---
-        const p = allProducts[index];
-        
-        document.getElementById('viewModalTitle').innerText = p.name;
-        document.getElementById('viewModalCat').innerText = p.cat;
-        
-        // Initial render: show all rows in "View" mode (-1 means no row is being edited)
-        renderViewModalTable(index, -1);
-        document.getElementById('viewModal').style.display = "flex";
-        
-    } else {
-        // --- ADD MODE (Clicked the + button) ---
-        const modal = document.getElementById('inputModal');
-        document.getElementById('modalAction').innerText = "Add Product";
-        
-        if (document.getElementById('cat')) document.getElementById('cat').value = "";
-        if (document.getElementById('brand')) document.getElementById('brand').value = "";
-        if (document.getElementById('name')) document.getElementById('name').value = "";
-        if (document.getElementById('mrp')) document.getElementById('mrp').value = "";
-        
-        modal.style.display = "flex";
-    }
-}
-
-// --- NEW FUNCTION: Redraws the table and handles the inline edit state ---
-function renderViewModalTable(productIndex, editRowIdx = -1) {
-    const p = allProducts[productIndex];
-    
-    let specsArray = [];
-    if (!p.specs || p.specs.trim() === "") {
-        specsArray = [p.name]; 
-    } else {
-        specsArray = String(p.specs).split(/[,，|]+/);
-    }
-    
-    const pricesArray = String(p.mrp || "0").split(/[,，|]+/);
-    let rowsHtml = "";
-    
-    specsArray.forEach((fullSpec, idx) => {
-        const cleanSpec = fullSpec.trim();
-        if (!cleanSpec) return;
-        
-        const price = parseFloat(pricesArray[idx] ? pricesArray[idx].trim().replace(/[₹\s,]/g,'') : (pricesArray[0] ? pricesArray[0].trim().replace(/[₹\s,]/g,'') : "0")) || 0;
-        
-        if (idx === editRowIdx) {
-            // ✏️ EDIT MODE ROW (Input boxes with Gold/Green borders)
-            rowsHtml += `
-            <tr>
-                <td style="padding:16px 5px; border-bottom:1px solid #f1f5f9; font-size:11px; font-weight:900; color:#b38728; text-transform:uppercase; letter-spacing:0.5px;">${p.brand}</td>
-                
-                <td style="padding:16px 5px; border-bottom:1px solid #f1f5f9;">
-                    <input type="text" id="editSpec_${idx}" value="${cleanSpec}" style="width: 90%; padding: 8px; border: 2px solid #b38728; border-radius: 4px; font-size: 14px; font-weight: 800; color: #1e293b; outline: none;">
-                </td>
-                
-                <td style="padding:16px 5px; border-bottom:1px solid #f1f5f9;">
-                    <div style="display: flex; align-items: center;">
-                        <span style="color: #b38728; font-weight: 800; margin-right: 4px;">₹</span>
-                        <input type="number" id="editPrice_${idx}" value="${price}" style="width: 80px; padding: 8px; border: 2px solid #10b981; border-radius: 4px; font-size: 14px; font-weight: 800; color: #1e293b; outline: none;">
-                    </div>
-                </td>
-                
-                <td style="padding:16px 5px; border-bottom:1px solid #f1f5f9; text-align:right; white-space:nowrap;">
-                    <button onclick="saveInlineVariant(${productIndex}, ${idx})" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 800; font-size: 11px; cursor: pointer; margin-right: 5px;">SAVE</button>
-                    <button onclick="renderViewModalTable(${productIndex}, -1)" style="background: #94a3b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 800; font-size: 11px; cursor: pointer;">X</button>
-                </td>
-            </tr>`;
+    let index = 0;
+    function attemptLoad() {
+        if (index < expandedUrls.length) {
+            const imgTester = new Image();
+            imgTester.onload = () => { imgElement.src = expandedUrls[index - 1]; };
+            imgTester.onerror = attemptLoad;
+            imgTester.src = expandedUrls[index++];
         } else {
-            // 👁️ VIEW MODE ROW (Standard text and icons)
-            rowsHtml += `
-            <tr>
-                <td style="padding:16px 5px; border-bottom:1px solid #f1f5f9; font-size:11px; font-weight:900; color:#b38728; text-transform:uppercase; letter-spacing:0.5px;">${p.brand}</td>
-                
-                <td style="padding:16px 5px; border-bottom:1px solid #f1f5f9; font-size:15px; font-weight:800; color:#1e293b;">${cleanSpec}</td>
-                
-                <td style="padding:16px 5px; border-bottom:1px solid #f1f5f9; font-size:15px; font-weight:800; color:#b38728;">₹${price}</td>
-                
-                <td style="padding:16px 5px; border-bottom:1px solid #f1f5f9; text-align:right;">
-                    <button onclick="renderViewModalTable(${productIndex}, ${idx})" style="background:none; border:none; cursor:pointer; font-size:18px; margin-right:12px; transition:0.2s;" title="Edit Variant">📝</button>
-                    <button onclick="deleteProduct(${productIndex}); closeViewModal();" style="background:none; border:none; cursor:pointer; font-size:18px; transition:0.2s;" title="Delete Entire Product">🗑️</button>
-                </td>
-            </tr>`;
+            imgElement.src = 'https://placehold.co/150x150/f8fafc/b38728?text=No+Photo';
         }
-    });
-    
-    document.getElementById('viewModalTableBody').innerHTML = rowsHtml;
-}
-function saveInlineVariant(productIndex, variantIndex) {
-    const p = allProducts[productIndex];
-    const newSpec = document.getElementById(`editSpec_${variantIndex}`).value;
-    const newPrice = document.getElementById(`editPrice_${variantIndex}`).value;
-    
-    // 1. Get and update the arrays
-    let specsArray = (!p.specs || p.specs.trim() === "") ? [p.name] : String(p.specs).split(/[,，|]+/);
-    let pricesArray = String(p.mrp || "0").split(/[,，|]+/);
-    while (pricesArray.length < specsArray.length) { pricesArray.push(pricesArray[0] || "0"); }
-    
-    specsArray[variantIndex] = newSpec;
-    pricesArray[variantIndex] = newPrice;
-    
-    p.specs = specsArray.join(", ");
-    p.mrp = pricesArray.join(", ");
-    
-    renderViewModalTable(productIndex, -1);
-    
-    const titleElement = document.getElementById('viewModalTitle');
-    const originalTitle = titleElement.innerText;
-    titleElement.innerText = "Saving to Database... ⏳";
-    titleElement.style.color = "#10b981"; 
-
-    // ---------------------------------------------------------
-    // THE FIX: Directly package and send the data (Bypasses the form)
-    // ---------------------------------------------------------
-    const form = document.getElementById('productForm'); 
-    
-    if (form && form.action) {
-        const scriptURL = form.action; // Grabs your Google Script URL from the HTML form
-        
-        // Manually build the data package
-        const formData = new FormData();
-        formData.append("rowId", productIndex);
-        formData.append("cat", p.cat || "");
-        formData.append("brand", p.brand || "");
-        formData.append("name", p.name || "");
-        formData.append("specs", p.specs);
-        formData.append("mrp", p.mrp);
-        
-        // Send it completely in the background via fetch
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors', // <-- YOU MUST ADD THIS LINE
-            body: formData
-        })
-        .then(response => {
-            // Success! Revert the title back to normal
-            setTimeout(() => {
-                titleElement.innerText = originalTitle;
-                titleElement.style.color = "#b38728"; 
-            }, 1000);
-        })
-        .catch(error => {
-            console.error("Error Saving:", error);
-            titleElement.innerText = "Error Saving!";
-            titleElement.style.color = "red";
-        });
-        
-    } else {
-        alert("System Error: Could not find the Google Script URL in your form.");
     }
+    attemptLoad();
 }
-function closeViewModal() {
-    document.getElementById('viewModal').style.display = "none";
-}
-// --- MISSING CANCEL FUNCTION ---
-function closeModal() {
-    document.getElementById('inputModal').style.display = "none";
-}
+function openModal(encN, encC, encP, isAutoHinge) {
+    const name = decodeURIComponent(encN);
+    const cat = decodeURIComponent(encC);
+    const brandParam = decodeURIComponent(encP);
+    
+    document.getElementById('modalTitle').innerText = name;
+    document.getElementById('modalBrand').innerText = cat;
+    const tbody = document.getElementById('modalTableBody');
+    tbody.innerHTML = "";
 
-// --- NEW: ADD PRODUCT BACKGROUND INTERCEPTOR ---
-const formToSave = document.getElementById('productForm');
+    const variants = allProducts.filter(p => {
+        return String(p.name).trim().toLowerCase() === name.trim().toLowerCase() && 
+               String(p.cat).trim().toLowerCase() === cat.trim().toLowerCase() && 
+               String(p.brand).trim().toLowerCase() === brandParam.trim().toLowerCase();
+    });
 
-if (formToSave) {
-    formToSave.addEventListener('submit', function(e) {
-        // 1. Stop the page refresh
-        e.preventDefault(); 
-        
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerText;
-        submitBtn.innerText = "SAVING... ⏳";
-        
-        // 2. Grab the data from the form
-        const formData = new FormData(this);
-        
-        // 3. THE FIX: Convert data to the format Google Apps Script loves
-        const urlEncodedData = new URLSearchParams();
-        for (const pair of formData) {
-            urlEncodedData.append(pair[0], pair[1]);
-        }
-        
-        // 4. Send it to Google silently
-        fetch(this.action, {
-            method: 'POST',
-            mode: 'no-cors', 
-            body: urlEncodedData // Send the newly formatted data
-        })
-        .then(() => {
-            console.log("Background save complete!");
-            submitBtn.innerText = "SUCCESS! ✔️";
-            
-            setTimeout(() => {
-                closeModal();
-                submitBtn.innerText = originalText;
-                
-                // Optional: You can call loadData() here to refresh the grid!
-                // loadData(); 
-            }, 1500);
-        })
-        .catch(error => {
-            console.error("Error saving to Google:", error);
-            submitBtn.innerText = "ERROR! ❌";
-            setTimeout(() => { submitBtn.innerText = originalText; }, 2000);
+    let collectedSizes = [];
+    variants.forEach((v, idx) => {
+        String(v.specs || "").split(/[,，\n|]+/).forEach((s, sIdx) => {
+            if (!s.trim()) return;
+            const prices = String(v.mrp || "0").split(/[,，\n|]+/);
+            const mMRP = (prices[sIdx] || prices[0]).trim();
+            collectedSizes.push({ brand: v.brand, pName: v.name, cleanS: s.trim(), v: v, matchedMRP: mMRP, rowId: `row-${idx}-${sIdx}` });
         });
     });
+
+    // Simple sorting by size
+    collectedSizes.sort((a, b) => a.cleanS.localeCompare(b.cleanS, undefined, { numeric: true }));
+
+    collectedSizes.forEach(item => {
+        const encB = encodeURIComponent(item.brand).replace(/'/g, "%27");
+        const encN2 = encodeURIComponent(item.v.name).replace(/'/g, "%27");
+        const encS = encodeURIComponent(item.cleanS).replace(/'/g, "%27");
+
+        tbody.innerHTML += `
+        <tr id="${item.rowId}" style="border-bottom:1px solid #eee;">
+            <td style="padding:12px; color:#b38728; font-weight:800; font-size:11px; text-transform:uppercase;">${item.brand}</td>
+            <td class="size-cell" style="padding:12px; font-weight:700;">${item.cleanS}</td>
+            <td class="mrp-cell" style="padding:12px; color: #b38728; font-weight:bold;">₹${item.matchedMRP}</td>
+            <td style="text-align: right; white-space: nowrap;">
+                <span class="action-icon edit-icon" style="cursor:pointer; margin-right:15px; color:#b38728;" onclick="makeEditable('${item.rowId}', '${encB}', '${encN2}', '${encS}', '${item.matchedMRP}')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </span>
+                <span class="action-icon delete-icon" style="cursor:pointer; color:#e74c3c;" onclick="deleteRowSafe('${encB}', '${encN2}', '${encS}', '${item.rowId}')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </span>
+            </td>
+        </tr>`;
+    });
+    document.getElementById('priceModal').style.display = "flex";
 }
-    // START
-    loadData();
-</script>
-<!-- THE NEW VARIANTS TABLE MODAL (Matches Screenshot Exactly) -->
-    <div id="viewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index: 2500;">
-        <div style="background: white; width: 90%; max-width: 650px; padding: 30px; border-radius: 12px; position:relative; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-            
-            <!-- Close X -->
-            <span onclick="closeViewModal()" style="position:absolute; top:20px; right:20px; font-size:24px; cursor:pointer; color:#94a3b8; font-weight:bold;">&times;</span>
-            
-            <!-- Product Title & Category -->
-            <h2 id="viewModalTitle" style="color:#b38728; margin:0 0 5px 0; font-size:26px; font-weight:900;">Product Name</h2>
-            <p id="viewModalCat" style="color:#64748b; font-weight:800; margin:0 0 25px 0; font-size:15px;">Category</p>
-            
-            <!-- The Data Table -->
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 25px;">
-                <thead>
-                    <tr>
-                        <th style="text-align:left; padding:12px 5px; border-bottom:1px solid #cbd5e1; color:#1e293b; font-size:15px; font-weight:800;">Brand</th>
-                        <th style="text-align:left; padding:12px 5px; border-bottom:1px solid #cbd5e1; color:#1e293b; font-size:15px; font-weight:800;">Size / Specs</th>
-                        <th style="text-align:left; padding:12px 5px; border-bottom:1px solid #cbd5e1; color:#1e293b; font-size:15px; font-weight:800;">MRP (₹)</th>
-                        <th style="text-align:right; padding:12px 5px; border-bottom:1px solid #cbd5e1; color:#1e293b; font-size:15px; font-weight:800;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="viewModalTableBody">
-                    <!-- Javascript will generate the rows here -->
-                </tbody>
-            </table>
-            
-            <!-- Close Button -->
-            <button onclick="closeViewModal()" style="width:100%; padding:14px; background:#f1f5f9; color:#1e293b; font-weight:800; border:none; border-radius:8px; cursor:pointer; font-size:14px; text-transform:uppercase;">CLOSE WINDOW</button>
-        </div>
-    </div>
-    <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
+function makeEditable(rowId, encB, encN, encS, oldMrp) {
+    const row = document.getElementById(rowId), oldSize = decodeURIComponent(encS), safeInput = oldSize.replace(/"/g, '&quot;');
+    row.querySelector('.size-cell').innerHTML = `<input type="text" id="edit-size-${rowId}" value="${safeInput}" style="width:100px; padding:6px; border:2px solid #b38728; border-radius:4px; font-weight:bold;">`;
+    row.querySelector('.mrp-cell').innerHTML = `₹<input type="number" id="edit-mrp-${rowId}" value="${oldMrp}" style="width:60px; padding:6px; border:2px solid #16a34a; border-radius:4px; font-weight:bold;">`;
+    row.querySelector('td:last-child').innerHTML = `
+        <button type="button" onclick="saveInLine('${rowId}', '${encB}', '${encN}', '${encS}')" style="background:#10b981; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;">SAVE</button>
+        <button type="button" onclick="cancelEditSafe('${rowId}', '${encS}', '${oldMrp}', '${encB}', '${encN}')" style="background:#94a3b8; color:white; border:none; padding:8px 10px; border-radius:4px; cursor:pointer; margin-left:3px; font-size:11px;">X</button>`;
+}
+
+async function saveInLine(rowId, encB, encN, encS) {
+    const row = document.getElementById(rowId);
+    const newSize = document.getElementById(`edit-size-${rowId}`).value;
+    const newMrp = document.getElementById(`edit-mrp-${rowId}`).value;
+    
+    // Debug: Check what data is being sent
+    console.log("Saving:", { rowId, newSize, newMrp });
+
+    row.querySelector('td:last-child').innerHTML = `<span style="color:#b38728; font-weight:bold; font-size:11px;">SYNCING...</span>`;
+
+    try {
+        const response = await fetch(webAppUrl, { 
+            method: "POST", 
+            mode: "no-cors", 
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify({ 
+                action: "updateRow", 
+                brand: decodeURIComponent(encB), 
+                name: decodeURIComponent(encN), 
+                oldSize: decodeURIComponent(encS), 
+                newSize: newSize, 
+                newPrice: newMrp 
+            })
+        });
+
+        // Update UI immediately
+        row.querySelector('.size-cell').innerText = newSize; 
+        row.querySelector('.mrp-cell').innerText = "₹" + newMrp;
+        
+        // Return to normal icon state
+        cancelEditSafe(rowId, encodeURIComponent(newSize).replace(/'/g, "%27"), newMrp, encB, encN);
+        showToast("Database Updated", "success");
+        
+    } catch (error) {
+        console.error("Save Error:", error);
+        showToast("Save Failed!", "error");
+        row.querySelector('td:last-child').innerHTML = `<span style="color:red;">ERROR</span>`;
     }
+}
+function cancelEditSafe(rowId, encS, oldMrp, encB, encN) {
+    const row = document.getElementById(rowId);
+    row.querySelector('.size-cell').innerText = decodeURIComponent(encS); 
+    row.querySelector('.mrp-cell').innerText = "₹" + oldMrp;
+    row.querySelector('td:last-child').innerHTML = `
+        <span class="action-icon edit-icon" onclick="makeEditable('${rowId}', '${encB}', '${encN}', '${encS}', '${oldMrp}')"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/></svg></span>
+        <span class="action-icon delete-row-icon" onclick="deleteRowSafe('${encB}', '${encN}', '${encS}', '${rowId}')"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></span>`;
+}
+
+function showUndoToast(message, actionData) {
+    if (deleteTimeout) executeFinalDelete();
+    lastDeletedData = actionData;
+    
+    let toast = document.getElementById("undoToast");
+    if(!toast) {
+        toast = document.createElement('div'); 
+        toast.id = "undoToast"; 
+        toast.className = `toast-msg`;
+        document.body.appendChild(toast);
+    }
+    
+    toast.innerHTML = `<span style="margin-right: 15px;">${message}</span><span class="undo-link" onclick="undoAction()" style="color:#b38728; font-weight:bold; cursor:pointer;">UNDO</span>`;
+    toast.style.display = "flex";
+    toast.style.background = "#334155";
+    toast.style.position = "fixed";
+    toast.style.bottom = "80px";
+    toast.style.right = "30px";
+    toast.style.padding = "16px 24px";
+    toast.style.borderRadius = "8px";
+    toast.style.color = "white";
+    toast.style.zIndex = "9999";
+    
+    deleteTimeout = setTimeout(() => executeFinalDelete(), 5000);
+}
+
+function undoAction() {
+    clearTimeout(deleteTimeout); 
+    deleteTimeout = null; 
+    document.getElementById('undoToast').style.display = "none";
+    
+    if (lastDeletedData.type === 'full') { 
+        const card = document.getElementById(lastDeletedData.cardId);
+        if(card) {
+            card.style.display = 'flex'; 
+            setTimeout(() => { card.style.transform = "scale(1)"; card.style.opacity = "1"; }, 10);
+        }
+    } else { 
+        const row = document.getElementById(lastDeletedData.id); 
+        if(row) {
+            row.style.display = 'table-row'; 
+            setTimeout(() => { row.style.opacity = "1"; }, 10);
+        }
+    }
+    lastDeletedData = null; 
+    showToast("Restored successfully!", "success");
+}
+
+async function executeFinalDelete() {
+    const toast = document.getElementById('undoToast'); 
+    if (toast) toast.style.display = "none";
+    if (!lastDeletedData) return;
+    
+    const payload = { 
+        action: lastDeletedData.type === 'full' ? "deleteEntireProduct" : "deleteSingleSize", 
+        brand: lastDeletedData.brand, 
+        name: lastDeletedData.name, 
+        size: lastDeletedData.size 
+    };
+    
+    fetch(webAppUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+    showToast("Deleted from Database", "success");
+    lastDeletedData = null; 
+    deleteTimeout = null;
+}
+
+function deleteRowSafe(encB, encN, encS, rowId) {
+    const size = decodeURIComponent(encS);
+    askBeforeDelete("Remove Size?", `Remove "${size}"?`, () => {
+        const row = document.getElementById(rowId); 
+        if(row) {
+            row.style.opacity = '0';
+            setTimeout(() => { row.style.display = 'none'; }, 300);
+        }
+        showUndoToast("Size removed", { type: 'row', brand: decodeURIComponent(encB), name: decodeURIComponent(encN), size: size, id: rowId });
+    });
+}
+
+function deleteProductGroup(encN, encC, encP, isAutoHinge, cardId) {
+    const prodName = decodeURIComponent(encN);
+    const param = decodeURIComponent(encP);
+    
+    askBeforeDelete("Delete Entire Product?", `This will delete every variant of <b>${prodName}</b>.`, () => {
+        const card = document.getElementById(cardId);
+        if(card) {
+            card.style.transform = "scale(0.9)";
+            card.style.opacity = "0";
+            setTimeout(() => { card.style.display = 'none'; }, 300); 
+        }
+        
+        const brandForDb = isAutoHinge ? "N/A" : param; 
+        showUndoToast("Product group removed", { type: 'full', brand: brandForDb, name: prodName, cardId: cardId });
+    });
+}
+
+// UTILITIES
+function showToast(message, type = 'success') {
+    let toast = document.getElementById("pro-toast");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "pro-toast";
+        toast.style.cssText = `position: fixed; bottom: 30px; right: 30px; padding: 16px 24px; border-radius: 8px; font-weight: bold; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; transition: 0.3s; opacity: 0; transform: translateY(20px);`;
+        document.body.appendChild(toast);
+    }
+    toast.style.background = type === 'error' ? "#ef4444" : "#10b981";
+    toast.innerHTML = message;
+    
+    setTimeout(() => { toast.style.opacity = "1"; toast.style.transform = "translateY(0)"; }, 10);
+    setTimeout(() => { toast.style.opacity = "0"; toast.style.transform = "translateY(20px)"; }, 2500);
+}
+
+function askBeforeDelete(title, text, action) {
+    document.getElementById('confirmTitle').innerText = title; 
+    document.getElementById('confirmText').innerHTML = text; 
+    document.getElementById('customConfirmModal').style.display = 'flex';
+    document.getElementById('confirmYesBtn').onclick = () => { action(); closeConfirm(); };
+}
+
+function closeConfirm() { document.getElementById('customConfirmModal').style.display = 'none'; }
+
+function populateCats(products) {
+    const catSelect = document.getElementById('newCat'); 
+    if (!catSelect) return;
+    const categories = [...new Set(products.map(p => p.cat))].filter(c => c).sort();
+    catSelect.innerHTML = '<option value="">Select Category</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('') + '<option value="ADD_NEW" style="color:#d4af37; font-weight:bold;">+ Add New Category</option>';
+    catSelect.onchange = function() {
+        if (this.value === "ADD_NEW") { const nCat = prompt("New Category Name:"); if (nCat) { const opt = document.createElement('option'); opt.value = nCat; opt.text = nCat; this.add(opt, this.options[this.length - 1]); this.value = nCat; } else this.value = ""; }
+    };
+}
+
+function populateSuggestions(products) {
+    uniqueBrands = [...new Set(products.map(p => String(p.brand || "").trim()))].filter(b => b && b !== "N/A").sort();
+    uniqueNames = [...new Set(products.map(p => String(p.name || "").trim()))].filter(n => n && n !== "Unnamed").sort();
+}
+
+function showSuggestions(input, type) {
+    const val = input.value.toLowerCase();
+    const container = document.getElementById(type === 'brand' ? 'brandSuggestions' : 'nameSuggestions');
+    const list = type === 'brand' ? uniqueBrands : uniqueNames;
+    
+    container.innerHTML = ""; 
+    if (!val) { container.style.display = "none"; return; }
+    
+    const filtered = list.filter(item => item.toLowerCase().includes(val));
+    if (filtered.length > 0) {
+        container.style.display = "block";
+        filtered.forEach(item => { 
+            const div = document.createElement('div'); 
+            div.className = 'suggestion-item'; 
+            div.innerText = item; 
+            div.onclick = () => { input.value = item; container.style.display = "none"; }; 
+            container.appendChild(div); 
+        });
+    } else container.style.display = "none";
+}
+
+document.addEventListener('click', e => { 
+    if (!e.target.matches('input')) document.querySelectorAll('.suggestion-container').forEach(c => c.style.display = "none"); 
+});
+
+async function handleAddProduct(event) {
+    event.preventDefault(); 
+    const btn = document.getElementById('submitBtn'); 
+    btn.innerText = "SAVING..."; btn.disabled = true;
+
+    try {
+        const fileInput = document.getElementById('new-product-file'); 
+        let fileData = "", mimeType = "", filename = "";
+        
+        // Check if an image was selected
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0]; 
+            const reader = new FileReader();
+            
+            // Wait for the image to be converted to Base64
+            fileData = await new Promise(res => { 
+                reader.onload = e => res(e.target.result.split(',')[1]); 
+                reader.readAsDataURL(file); 
+            });
+            mimeType = file.type; 
+            filename = file.name;
+        }
+        
+        const payload = { 
+            action: fileData ? "addWithImage" : "add", 
+            cat: document.getElementById('newCat').value, 
+            brand: document.getElementById('newBrand').value || "N/A", 
+            name: document.getElementById('newName').value, 
+            specs: document.getElementById('newSpecs').value, 
+            mrp: document.getElementById('newMrp').value,
+            fileData: fileData, 
+            mimeType: mimeType, 
+            filename: filename 
+        };
+        
+        await fetch(webAppUrl, { 
+            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, 
+            body: JSON.stringify(payload) 
+        });
+        
+        showToast("Product & Image saved!", "success"); 
+        document.getElementById('addProductForm').reset(); 
+        closeAllModals(); 
+        setTimeout(loadManagerData, 2000);
+    } catch (error) { 
+        showToast("Failed to save product.", "error"); 
+    } finally { 
+        btn.innerText = "Add to Inventory"; btn.disabled = false; 
+    }
+}
+
+function logout() { sessionStorage.removeItem('managerAuth'); window.location.href = "index.html"; }
+function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
+window.onscroll = () => document.getElementById("backToTop").style.display = (window.scrollY > 300) ? "flex" : "none";
+function toggleAddModal() { const m = document.getElementById('addProductModal'), b = document.getElementById('modalBackdrop'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
+function closeAllModals() { document.getElementById('priceModal').style.display = 'none'; document.getElementById('addProductModal').style.display = 'none'; document.getElementById('modalBackdrop').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+loadManagerData();
 </script>
 </body>
 </html>
