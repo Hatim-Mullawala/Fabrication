@@ -106,47 +106,51 @@
         let allProducts = []; 
         let uniqueCategories = new Set();
 
-        async function loadPrintData() {
-            try {
-                const resp = await fetch(SHEET_URL + '&nocache=' + new Date().getTime());
-                const data = await resp.text();
-                const rows = data.split('\n').slice(1);
-                
-                rows.forEach(row => {
-                    const c = row.split(','); 
-                    if(c.length < 3) return; 
+       async function loadPrintData() {
+    try {
+        const resp = await fetch(SHEET_URL + '&nocache=' + new Date().getTime());
+        const data = await resp.text();
+        const rows = data.split('\n').slice(1);
+        
+        rows.forEach(row => {
+            const c = row.split(','); 
+            if(c.length < 3) return; 
 
-                    const category = (c[0] || "").trim();
-                    const brand = (c[1] || "").trim();
-                    const name = (c[2] || "").trim();
-                    const mrp = (c[5] || "0").trim();          
-                    const sellingPrice = (c[6] || "0").trim(); 
-                    const lastUpdated = (c[7] || "N/A").trim();
+            const category = (c[0] || "").trim();
+            const brand = (c[1] || "").trim();
+            const name = (c[2] || "").trim();
+            const mrp = (c[5] || "0").trim();          
+            const sellingPrice = (c[6] || "0").trim(); 
+            const lastUpdated = (c[7] || "N/A").trim();
 
-                    if(category !== "") {
-                        uniqueCategories.add(category);
-                    }
-                    allProducts.push({ category, brand, name, mrp, sellingPrice, lastUpdated });
-                });
-
-                const checkboxContainer = document.getElementById('category-checkboxes');
-                let html = `<label class="checkbox-label" style="background:#1a2942; color:white;">
-                                <input type="checkbox" id="selectAll" checked onchange="toggleAll(this)"> SELECT ALL
-                            </label>`;
-                
-                uniqueCategories.forEach(cat => {
-                    html += `<label class="checkbox-label">
-                                <input type="checkbox" class="cat-checkbox" value="${cat}" checked onchange="renderGrid()"> ${cat}
-                             </label>`;
-                });
-                
-                checkboxContainer.innerHTML = html;
-                renderGrid();
-
-            } catch (e) {
-                document.getElementById('print-container').innerHTML = "<h2 style='text-align:center;'>Error Loading Data</h2>";
+            if(category !== "") {
+                uniqueCategories.add(category);
             }
-        }
+            allProducts.push({ category, brand, name, mrp, sellingPrice, lastUpdated });
+        });
+
+        // --- THE FIX: SORT AFTER DATA IS LOADED ---
+        allProducts.sort((a, b) => String(a.brand).localeCompare(String(b.brand)));
+        // -------------------------------------------
+
+        const checkboxContainer = document.getElementById('category-checkboxes');
+        let html = `<label class="checkbox-label" style="background:#1a2942; color:white;">
+                        <input type="checkbox" id="selectAll" checked onchange="toggleAll(this)"> SELECT ALL
+                    </label>`;
+        
+        uniqueCategories.forEach(cat => {
+            html += `<label class="checkbox-label">
+                        <input type="checkbox" class="cat-checkbox" value="${cat}" checked onchange="renderGrid()"> ${cat}
+                     </label>`;
+        });
+        
+        checkboxContainer.innerHTML = html;
+        renderGrid(); // This will now render the sorted data
+
+    } catch (e) {
+        document.getElementById('print-container').innerHTML = "<h2 style='text-align:center;'>Error Loading Data</h2>";
+    }
+}
 
         function toggleAll(selectAllBox) {
             const checkboxes = document.querySelectorAll('.cat-checkbox');

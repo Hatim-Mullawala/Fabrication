@@ -395,21 +395,18 @@ console.log("First product imgUrl:", products[0]?.imgUrl);
                 html += `<div class="category-group" style="margin-bottom: 40px;"><h2 class="category-header">${currentCat}</h2><div class="product-grid">`; 
             }
 
-           // This forces "HT155 " to become "ht155", matching your local file name
-const bClean = String(p.brand).toLowerCase().replace(/[^a-z0-9]/g, ''); 
-const nClean = String(p.name).toLowerCase().replace(/[^a-z0-9]/g, '');
-                        // POINTING TO FABRICATION FOLDER
-            // Find the "const paths = ..." line in renderManagerCatalog and replace it with this:
-            const paths = p.imgUrl ? [p.imgUrl] : [
-    `fabrication-img/${bClean}-${nClean}.jpg`, 
-    `fabrication-img/${nClean}.jpg`,
-    `fabrication-img/${bClean}.jpg`, // Added: Looks for just the Brand Name (e.g., ht155.jpg)
-    
-    // Optional but recommended: PNG fallbacks just in case!
-    `fabrication-img/${bClean}-${nClean}.png`,
-    `fabrication-img/${nClean}.png`,
-    `fabrication-img/${bClean}.png`
-];
+           const nClean = String(p.name).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
+            const bClean = String(p.brand).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
+            const cClean = String(p.cat).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
+
+            // Standardized image paths for fabrication
+            // --- UPGRADED SMART IMAGE SEARCH ---
+        const paths = [
+            `fabrication-img/${bClean}-${nClean}.jpg`, // 1. Looks for the specific brand+product (pidilite-heatx.jpg)
+            `fabrication-img/${nClean}.jpg`,           // 2. Looks for just the product name (heatx.jpg)
+            `fabrication-img/${bClean}.jpg`,           // 3. ✨ NEW: Fallback to just the Brand name! (pidilite.jpg)
+            `fabrication-img/${cClean}.jpg`            // 4. ✨ NEW: Fallback to just the Category name! (adhesives.jpg)
+        ];
             const imgId = `img-${Math.random().toString(36).substr(2, 5)}`;
             const encN = encodeURIComponent(p.name);
             const encC = encodeURIComponent(catName);
