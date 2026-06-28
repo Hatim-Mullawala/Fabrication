@@ -333,18 +333,26 @@ function handleGoogleResponse(response) {
             name: String(entry['product name'] || "").trim(),
             specs: String(entry['specifications'] || "").trim(),
             mrp: String(entry['mrp'] || entry['MRP'] || entry['Mrp'] || entry['mrp '] || entry['MRP '] || "").trim() || "0",
+            
+            // Added Selling Rate so your Manager Mode columns populate correctly!
+            sellingrate: String(entry['selling rate'] || entry['Selling Rate'] || entry['sellingrate'] || "").trim() || "0",
+            
             imgUrl: String(entry['image'] || entry['Image'] || entry['IMAGE'] || "").trim(),
             tag: String(entry['tag'] || "").trim(),
-            series: String(entry['series'] || "").trim() // Restored for bundling
+            series: String(entry['series'] || "").trim() 
         };
     });
     
+    // --- THE NEW SORTING FIX ---
+    // This automatically alphabetizes everything by Brand Name (A-Z)
+    allProducts.sort((a, b) => String(a.brand).localeCompare(String(b.brand)));
+    // ---------------------------
+
     populateCats(allProducts);
     populateSuggestions(allProducts);
     renderManagerCatalog(allProducts); 
     document.getElementById('syncStatus').innerHTML = `🟢 Live Database Sync: <b>${new Date().toLocaleString()}</b>`;
 }
-
 // THE NEW FILTER SYSTEM FOR AUTO-GENERATED TABS
 function filterCategoryCards(filterType, btn) {
     const filterContainer = btn.parentElement;
