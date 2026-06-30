@@ -166,6 +166,49 @@
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr; /* Brand gets more space */
     align-items: center;
 }
+/* CUSTOM AUTOCOMPLETE DROPDOWN STYLES */
+.custom-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 9999;
+    display: none; /* Hidden by default */
+}
+
+/* Individual list items */
+.autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #475569;
+    border-bottom: 1px solid #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+/* Premium Hover Effect */
+.autocomplete-item:hover {
+    background-color: #f8fafc;
+    color: #b38728; /* Your gold accent color */
+    font-weight: 600;
+    padding-left: 20px; /* Slight indent animation */
+}
+
+/* Bolding the matching text */
+.autocomplete-item strong {
+    color: #1e293b;
+    font-weight: 800;
+}
     </style>
 </head>
 <body>
@@ -230,14 +273,21 @@
             <label>Category</label>
             <select name="cat" id="newCat" required><option value="">Select Category</option></select>
         </div>
-        <div class="input-group">
-            <label>Brand</label>
-            <input type="text" id="newBrand" placeholder="Brand Name" required autocomplete="off">
-        </div>
-        <div class="input-group">
-            <label>Product Name</label>
-            <input type="text" id="newName" placeholder="Product Name" required autocomplete="off">
-        </div>
+       <div style="margin: 10px 0;">
+    <label for="newBrand" style="display: block; font-size: 14px; color: #475569; margin-bottom: 5px;">Brand</label>
+    <div style="position: relative; width: 100%;">
+        <input type="text" id="newBrand" placeholder="Brand Name" autocomplete="off" style="width:100%; padding:10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+        <div id="brand-dropdown" class="custom-dropdown"></div>
+    </div>
+</div>
+
+<div style="margin: 10px 0;">
+    <label for="newName" style="display: block; font-size: 14px; color: #475569; margin-bottom: 5px;">Product Name</label>
+    <div style="position: relative; width: 100%;">
+        <input type="text" id="newName" placeholder="Product Name" autocomplete="off" style="width:100%; padding:10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+        <div id="name-dropdown" class="custom-dropdown"></div>
+    </div>
+</div>
         <div class="input-group">
             <label>Specifications</label>
             <input type="text" id="newSpecs" placeholder="e.g., 6 inch, 100g, Soft Close" required>
@@ -285,7 +335,21 @@
         <button onclick="closeAllModals()" class="btn-view" style="background:#eee; color:#333; margin-top:15px;">CLOSE WINDOW</button>
     </div>
 </div>
-
+<div id="customAlertOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: white; width: 90%; max-width: 400px; border-radius: 12px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); text-align: center; border-top: 5px solid #b38728;">
+        
+        <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+        
+        <h3 style="margin: 0 0 10px 0; color: #1e293b; font-family: sans-serif; font-size: 20px;">Product Already Exists</h3>
+        
+        <p id="customAlertMessage" style="color: #475569; font-size: 15px; margin-bottom: 24px; white-space: pre-line; line-height: 1.6;"></p>
+        
+        <button onclick="closeCustomAlert()" style="background: #b38728; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; transition: background 0.2s;">
+            OK, Show Me
+        </button>
+        
+    </div>
+</div>
 <div id="customConfirmModal" class="confirm-modal">
     <div class="confirm-content">
         <div style="font-size: 50px; color: #e74c3c; margin-bottom: 15px;">⚠️</div>
@@ -333,10 +397,7 @@ function handleGoogleResponse(response) {
             name: String(entry['product name'] || "").trim(),
             specs: String(entry['specifications'] || "").trim(),
             mrp: String(entry['mrp'] || entry['MRP'] || entry['Mrp'] || entry['mrp '] || entry['MRP '] || "").trim() || "0",
-            
-            // Added Selling Rate so your Manager Mode columns populate correctly!
             sellingrate: String(entry['selling rate'] || entry['Selling Rate'] || entry['sellingrate'] || "").trim() || "0",
-            
             imgUrl: String(entry['image'] || entry['Image'] || entry['IMAGE'] || "").trim(),
             tag: String(entry['tag'] || "").trim(),
             series: String(entry['series'] || "").trim() 
@@ -344,15 +405,82 @@ function handleGoogleResponse(response) {
     });
     
     // --- THE NEW SORTING FIX ---
-    // This automatically alphabetizes everything by Brand Name (A-Z)
     allProducts.sort((a, b) => String(a.brand).localeCompare(String(b.brand)));
     // ---------------------------
 
     populateCats(allProducts);
-    populateSuggestions(allProducts);
+    
+    // If this was an older function, it is safe to keep or delete.
+    if (typeof populateSuggestions === 'function') {
+        populateSuggestions(allProducts);
+    }
+    
     renderManagerCatalog(allProducts); 
     document.getElementById('syncStatus').innerHTML = `🟢 Live Database Sync: <b>${new Date().toLocaleString()}</b>`;
+
+    // 🌟 BRAND NEW AUTO-SUGGESTION TRIGGER 🌟
+    updateSuggestions();
 }
+// --- 1. THE AUTOCOMPLETE ENGINE ---
+function setupCustomAutocomplete(inputId, dropdownId, dataList) {
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
+    if (!input || !dropdown) return;
+
+    // Listen to the user typing
+    input.addEventListener('input', function() {
+        const val = this.value.toLowerCase().trim();
+        dropdown.innerHTML = ''; // Clear old suggestions
+
+        if (!val) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        // Find matches in your data
+        const matches = dataList.filter(item => item.toLowerCase().includes(val));
+
+        if (matches.length > 0) {
+            matches.forEach(match => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                
+                // Highlight the matching letters (e.g. if you type "he", it bolds "he" in "Hettich")
+                const regex = new RegExp(`(${val})`, "gi");
+                div.innerHTML = match.replace(regex, "<strong>$1</strong>");
+
+                // When they click a suggestion
+                div.onclick = function() {
+                    input.value = match;
+                    dropdown.style.display = 'none';
+                };
+                dropdown.appendChild(div);
+            });
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    // Close the dropdown if the user clicks anywhere else on the screen
+    document.addEventListener('click', function(e) {
+        if (e.target !== input && e.target !== dropdown) {
+            dropdown.style.display = 'none';
+        }
+    });
+}
+
+// --- 2. FEEDING YOUR DATA TO THE ENGINE ---
+function updateSuggestions() {
+    // Get unique brands and names, ignoring blanks, and sort them alphabetically A-Z
+    const uniqueBrands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))].sort();
+    const uniqueNames = [...new Set(allProducts.map(p => p.name).filter(Boolean))].sort();
+
+    // Attach them to your new inputs
+    setupCustomAutocomplete('newBrand', 'brand-dropdown', uniqueBrands);
+    setupCustomAutocomplete('newName', 'name-dropdown', uniqueNames);
+}
+
 // THE NEW FILTER SYSTEM FOR AUTO-GENERATED TABS
 function filterCategoryCards(filterType, btn) {
     const filterContainer = btn.parentElement;
@@ -840,9 +968,49 @@ function showSuggestions(input, type) {
 document.addEventListener('click', e => { 
     if (!e.target.matches('input')) document.querySelectorAll('.suggestion-container').forEach(c => c.style.display = "none"); 
 });
-
 async function handleAddProduct(event) {
     event.preventDefault(); 
+    
+    // --- 1. GRAB VALUES EARLY FOR DUPLICATE CHECK ---
+    const targetCat = document.getElementById('newCat').value.trim();
+    const targetBrand = (document.getElementById('newBrand').value || "N/A").trim();
+    const targetName = document.getElementById('newName').value.trim();
+    const targetSpecs = document.getElementById('newSpecs').value.trim();
+    const targetMrp = document.getElementById('newMrp').value.trim();
+
+    // --- 2. THE DUPLICATE CHECKER ---
+    const duplicate = allProducts.find(p => 
+        String(p.brand).trim().toLowerCase() === targetBrand.toLowerCase() &&
+        String(p.name).trim().toLowerCase() === targetName.toLowerCase() &&
+        String(p.specs).trim().toLowerCase() === targetSpecs.toLowerCase()
+    );
+
+    if (duplicate) {
+        // Create the clean message
+        const msg = `Brand: ${duplicate.brand}\nName: ${duplicate.name}\nSpecs: ${duplicate.specs}\n\nRedirecting you to this item now.`;
+        
+        // Trigger our NEW professional alert
+        showCustomAlert(msg, function() {
+            // EVERYTHING IN HERE HAPPENS *AFTER* THEY CLICK "OK"
+            
+            document.getElementById('addProductForm').reset();
+            closeAllModals(); // Make sure this function exists in your code to close the Add form
+            
+            // Push the product name into the search bar
+            const searchInput = document.getElementById('inventory-search');
+            if(searchInput) {
+                searchInput.value = duplicate.name;
+                if (typeof renderManagerCatalog === 'function') {
+                    renderManagerCatalog(allProducts); 
+                }
+            }
+        });
+        
+        return; // CRITICAL: Stops the function so nothing is sent to Google Sheets!
+    }
+    // --------------------------------
+
+    // --- 3. PROCEED WITH SAVING IF NO DUPLICATE ---
     const btn = document.getElementById('submitBtn'); 
     btn.innerText = "SAVING..."; btn.disabled = true;
 
@@ -866,11 +1034,11 @@ async function handleAddProduct(event) {
         
         const payload = { 
             action: fileData ? "addWithImage" : "add", 
-            cat: document.getElementById('newCat').value, 
-            brand: document.getElementById('newBrand').value || "N/A", 
-            name: document.getElementById('newName').value, 
-            specs: document.getElementById('newSpecs').value, 
-            mrp: document.getElementById('newMrp').value,
+            cat: targetCat, 
+            brand: targetBrand, 
+            name: targetName, 
+            specs: targetSpecs, 
+            mrp: targetMrp,
             fileData: fileData, 
             mimeType: mimeType, 
             filename: filename 
@@ -889,6 +1057,30 @@ async function handleAddProduct(event) {
         showToast("Failed to save product.", "error"); 
     } finally { 
         btn.innerText = "Add to Inventory"; btn.disabled = false; 
+    }
+}
+// Variable to remember what to do after the user clicks "OK"
+let customAlertCallback = null;
+
+function showCustomAlert(message, callback) {
+    // Insert the text
+    document.getElementById('customAlertMessage').innerText = message;
+    
+    // Show the modal (using flex to center it perfectly)
+    document.getElementById('customAlertOverlay').style.display = 'flex';
+    
+    // Save the follow-up action
+    customAlertCallback = callback;
+}
+
+function closeCustomAlert() {
+    // Hide the modal
+    document.getElementById('customAlertOverlay').style.display = 'none';
+    
+    // If we passed a function (like searching for the product), run it now!
+    if (customAlertCallback) {
+        customAlertCallback();
+        customAlertCallback = null; // Clear it out
     }
 }
 async function uploadPhotoFromMobile() {
