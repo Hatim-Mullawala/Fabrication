@@ -32,7 +32,13 @@
     body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
 
     .search-container { background: white; padding: 15px 0; display: flex; justify-content: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1000; }
-    .search-box { width: 60%; max-width: 700px; padding: 12px 25px; border: 1.5px solid var(--primary-gold); border-radius: 50px; font-size: 16px; outline: none; }
+    .search-wrap { position: relative; width: 60%; max-width: 700px; }
+    .search-box { width: 100%; padding: 12px 45px 12px 25px; border: 1.5px solid var(--primary-gold); border-radius: 50px; font-size: 16px; outline: none; box-sizing: border-box; }
+    .clear-search { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); 
+        background: #e74c3c; color: white; border: none; width: 24px; height: 24px; 
+        border-radius: 50%; font-size: 16px; cursor: pointer; display: none; 
+        align-items: center; justify-content: center; line-height: 1; }
+    .clear-search:hover { background: #c0392b; }
 
     .main-wrapper { max-width: 1300px; margin: 20px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.06); }
     .catalog-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 25px; border-bottom: 3px solid var(--primary-gold); margin-bottom: 30px; }
@@ -246,7 +252,10 @@
 </a>
 
 <div class="search-container">
-    <input type="text" id="searchInput" class="search-box" placeholder="Search fabrication materials..." onkeyup="filterProducts()">
+    <div class="search-wrap">
+        <input type="text" id="searchInput" class="search-box" placeholder="Search fabrication materials..." onkeyup="filterProducts()" oninput="toggleClearBtn(this)">
+        <button class="clear-search" onclick="clearSearch()">&times;</button>
+    </div>
 </div>
 
 <div class="main-wrapper">
@@ -1156,6 +1165,19 @@ function filterProducts() {
 
     // Update the badge with the new search count!
     document.getElementById('productCountDisplay').innerText = visibleCount;
+}
+
+function toggleClearBtn(input) {
+    const btn = input.parentElement.querySelector('.clear-search');
+    btn.style.display = input.value ? 'flex' : 'none';
+}
+
+function clearSearch() {
+    const input = document.getElementById('searchInput');
+    input.value = '';
+    input.focus();
+    toggleClearBtn(input);
+    filterProducts();
 }
 
 function filterCategoryCards(filterType, btn) {
