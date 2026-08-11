@@ -13,11 +13,17 @@
 
     /* --- Top Search Bar --- */
     .top-search-container { text-align: center; margin-bottom: 25px; }
+    .top-search-container .search-wrap { position: relative; display: inline-block; width: 100%; max-width: 600px; }
     .top-search-container input { 
-        width: 100%; max-width: 600px; padding: 12px 20px; 
+        width: 100%; padding: 12px 45px 12px 20px; 
         border: 1px solid var(--primary-gold); border-radius: 25px; 
-        font-size: 14px; outline: none; color: #555;
+        font-size: 14px; outline: none; color: #555; box-sizing: border-box;
     }
+    .clear-search { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); 
+        background: #e74c3c; color: white; border: none; width: 22px; height: 22px; 
+        border-radius: 50%; font-size: 14px; cursor: pointer; display: none; 
+        align-items: center; justify-content: center; line-height: 1; }
+    .clear-search:hover { background: #c0392b; }
 
     /* --- Main White Wrapper --- */
     .main-wrapper { 
@@ -142,7 +148,10 @@
 
     <!-- Top Centered Search Bar -->
     <div class="top-search-container">
-        <input type="text" id="searchInput" placeholder="Search Inventory (Name, Brand, Tags...)" onkeyup="filterManagerProducts()">
+        <div class="search-wrap">
+            <input type="text" id="searchInput" placeholder="Search Inventory (Name, Brand, Tags...)" onkeyup="filterManagerProducts()" oninput="toggleClearBtn(this)">
+            <button class="clear-search" onclick="clearSearch()">&times;</button>
+        </div>
     </div>
 
     <!-- Main Content Wrapper -->
@@ -369,6 +378,17 @@ function filterManagerProducts() {
         const text = card.getAttribute('data-search');
         card.style.display = text.includes(q) ? "flex" : "none";
     });
+}
+function toggleClearBtn(input) {
+    const btn = input.parentElement.querySelector('.clear-search');
+    btn.style.display = input.value ? 'flex' : 'none';
+}
+function clearSearch() {
+    const input = document.getElementById('searchInput');
+    input.value = '';
+    input.focus();
+    toggleClearBtn(input);
+    filterManagerProducts();
 }
 let editingIndex = -1; 
 
