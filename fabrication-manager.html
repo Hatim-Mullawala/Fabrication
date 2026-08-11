@@ -268,40 +268,53 @@
 <div id="addProductModal">
     <span class="close-modal" onclick="toggleAddModal()">&times;</span>
     <h3 style="margin-top:0;">Add Fabrication Fitting</h3>
+    
     <form id="addProductForm" onsubmit="handleAddProduct(event)">
+        
         <div class="input-group">
             <label>Category</label>
             <select name="cat" id="newCat" required><option value="">Select Category</option></select>
         </div>
-       <div style="margin: 10px 0;">
-    <label for="newBrand" style="display: block; font-size: 14px; color: #475569; margin-bottom: 5px;">Brand</label>
-    <div style="position: relative; width: 100%;">
-        <input type="text" id="newBrand" placeholder="Brand Name" autocomplete="off" style="width:100%; padding:10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
-        <div id="brand-dropdown" class="custom-dropdown"></div>
-    </div>
-</div>
+        
+        <div style="margin: 10px 0;">
+            <label for="newBrand" style="display: block; font-size: 14px; color: #475569; margin-bottom: 5px;">Brand</label>
+            <div style="position: relative; width: 100%;">
+                <input type="text" id="newBrand" placeholder="Brand Name" autocomplete="off" style="width:100%; padding:10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+                <div id="brand-dropdown" class="custom-dropdown"></div>
+            </div>
+        </div>
 
-<div style="margin: 10px 0;">
-    <label for="newName" style="display: block; font-size: 14px; color: #475569; margin-bottom: 5px;">Product Name</label>
-    <div style="position: relative; width: 100%;">
-        <input type="text" id="newName" placeholder="Product Name" autocomplete="off" style="width:100%; padding:10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
-        <div id="name-dropdown" class="custom-dropdown"></div>
-    </div>
-</div>
+        <div style="margin: 10px 0;">
+            <label for="newName" style="display: block; font-size: 14px; color: #475569; margin-bottom: 5px;">Product Name</label>
+            <div style="position: relative; width: 100%;">
+                <input type="text" id="newName" placeholder="Product Name" autocomplete="off" style="width:100%; padding:10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+                <div id="name-dropdown" class="custom-dropdown"></div>
+            </div>
+        </div>
+        
         <div class="input-group">
             <label>Specifications</label>
             <input type="text" id="newSpecs" placeholder="e.g., 6 inch, 100g, Soft Close" required>
         </div>
+        
         <div class="input-group">
             <label>MRP Price (₹)</label>
             <input type="number" id="newMrp" placeholder="0.00" required>
         </div>
-        <button type="submit" id="submitBtn" class="btn-view" style="margin-top:10px;">Add to Inventory</button>
+
+        <!-- MOVED INSIDE THE FORM AND UPGRADED -->
+        <div style="margin: 10px 0;">
+            <label style="display: block; font-size: 14px; color: #475569; margin-bottom: 5px;">Product Image (Camera or Gallery)</label>
+            <input type="file" id="new-product-file" accept="image/*" onchange="previewImage(event)" style="width:100%; padding:10px; border: 2px dashed #b38728; border-radius: 6px; outline: none; background: #f8fafc; cursor: pointer; color: #1e293b; font-size: 14px;">
+            
+            <!-- Live Preview Box -->
+            <div id="image-preview-container" style="display: none; margin-top: 10px; text-align: center;">
+                <img id="image-preview" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+            </div>
+        </div>
+        
+        <button type="submit" id="submitBtn" class="btn-view" style="margin-top:10px; width: 100%;">Add to Inventory</button>
     </form>
-    <div class="input-group">
-    <label>Product Image</label>
-    <input type="file" id="new-product-file" accept="image/*" style="padding: 8px;">
-</div>
 </div>
 
 <div id="priceModal" class="modal" onclick="if(event.target == this) closeAllModals()">
@@ -1051,6 +1064,8 @@ async function handleAddProduct(event) {
         
         showToast("Product & Image saved!", "success"); 
         document.getElementById('addProductForm').reset(); 
+        // Hide the image preview after saving
+document.getElementById('image-preview-container').style.display = 'none';
         closeAllModals(); 
         setTimeout(loadManagerData, 2000);
     } catch (error) { 
@@ -1135,6 +1150,22 @@ function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
 window.onscroll = () => document.getElementById("backToTop").style.display = (window.scrollY > 300) ? "flex" : "none";
 function toggleAddModal() { const m = document.getElementById('addProductModal'), b = document.getElementById('modalBackdrop'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
 function closeAllModals() { document.getElementById('priceModal').style.display = 'none'; document.getElementById('addProductModal').style.display = 'none'; document.getElementById('modalBackdrop').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+function previewImage(event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImage = document.getElementById('image-preview');
+    
+    if (file) {
+        // Creates a temporary link to show the image on screen
+        previewImage.src = URL.createObjectURL(file);
+        previewContainer.style.display = 'block';
+    } else {
+        // Hides the box if they cancel
+        previewImage.src = '';
+        previewContainer.style.display = 'none';
+    }
+}
 
 loadManagerData();
 </script>
