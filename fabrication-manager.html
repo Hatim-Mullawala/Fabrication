@@ -534,7 +534,7 @@ function clearSearch() {
 }
 async function renderManagerCatalog(products) {
     // Add this line inside renderManagerCatalog at the very top:
-console.log("First product imgUrl:", products[0]?.imgUrl);
+    console.log("First product imgUrl:", products[0]?.imgUrl);
     const container = document.getElementById('catalog-container');
     if (!container) return;
 
@@ -547,7 +547,7 @@ console.log("First product imgUrl:", products[0]?.imgUrl);
 
     for (const p of filtered) {
         const catName = String(p.cat);
-       const key = `${catName}|${p.name}|${p.brand}|${p.rowId || Math.random()}`;
+        const key = `${catName}|${p.name}|${p.brand}|${p.rowId || Math.random()}`;
         
         if (!seen.has(key)) {
             if (catName !== currentCat) {
@@ -556,18 +556,25 @@ console.log("First product imgUrl:", products[0]?.imgUrl);
                 html += `<div class="category-group" style="margin-bottom: 40px;"><h2 class="category-header">${currentCat}</h2><div class="product-grid">`; 
             }
 
-           const nClean = String(p.name).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
+            const nClean = String(p.name).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
             const bClean = String(p.brand).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
             const cClean = String(p.cat).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
 
-            // Standardized image paths for fabrication
-            // --- UPGRADED SMART IMAGE SEARCH ---
-        const paths = [
-            `fabrication-img/${bClean}-${nClean}.jpg`, // 1. Looks for the specific brand+product (pidilite-heatx.jpg)
-            `fabrication-img/${nClean}.jpg`,           // 2. Looks for just the product name (heatx.jpg)
-            `fabrication-img/${bClean}.jpg`,           // 3. ✨ NEW: Fallback to just the Brand name! (pidilite.jpg)
-            `fabrication-img/${cClean}.jpg`            // 4. ✨ NEW: Fallback to just the Category name! (adhesives.jpg)
-        ];
+            // --- THE FIX: SMART IMAGE SEARCH NOW CHECKS GOOGLE DRIVE FIRST ---
+            const paths = [];
+            
+            // 1. Check Google Drive FIRST (Matches Column H named "Image")
+            if (p.image && p.image.trim() !== "") {
+                paths.push(String(p.image).trim());
+            }
+
+            // 2. Fallbacks: Local folders
+            paths.push(`fabrication-img/${bClean}-${nClean}.jpg`);
+            paths.push(`fabrication-img/${nClean}.jpg`);           
+            paths.push(`fabrication-img/${bClean}.jpg`);           
+            paths.push(`fabrication-img/${cClean}.jpg`);           
+            // -----------------------------------------------------------------
+
             const imgId = `img-${Math.random().toString(36).substr(2, 5)}`;
             const encN = encodeURIComponent(p.name);
             const encC = encodeURIComponent(catName);
