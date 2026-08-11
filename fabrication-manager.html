@@ -1019,17 +1019,12 @@ async function handleAddProduct(event) {
     );
 
     if (duplicate) {
-        // Create the clean message
         const msg = `Brand: ${duplicate.brand}\nName: ${duplicate.name}\nSpecs: ${duplicate.specs}\n\nRedirecting you to this item now.`;
         
-        // Trigger our NEW professional alert
         showCustomAlert(msg, function() {
-            // EVERYTHING IN HERE HAPPENS *AFTER* THEY CLICK "OK"
-            
             document.getElementById('addProductForm').reset();
-            closeAllModals(); // Make sure this function exists in your code to close the Add form
+            closeAllModals(); 
             
-            // Push the product name into the search bar
             const searchInput = document.getElementById('inventory-search');
             if(searchInput) {
                 searchInput.value = duplicate.name;
@@ -1039,8 +1034,7 @@ async function handleAddProduct(event) {
                 }
             }
         });
-        
-        return; // CRITICAL: Stops the function so nothing is sent to Google Sheets!
+        return; 
     }
     // --------------------------------
 
@@ -1052,19 +1046,54 @@ async function handleAddProduct(event) {
         const fileInput = document.getElementById('new-product-file'); 
         let fileData = "", mimeType = "", filename = "";
         
-        // Check if an image was selected
+        // --- THE SMART COMPRESSOR ENGINE ---
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0]; 
-            const reader = new FileReader();
             
-            // Wait for the image to be converted to Base64
-            fileData = await new Promise(res => { 
-                reader.onload = e => res(e.target.result.split(',')[1]); 
+            fileData = await new Promise((resolve) => { 
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; // Shrink to web-friendly width
+                        const MAX_HEIGHT = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Calculate new compressed dimensions
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        
+                        // Draw image on canvas at new size
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Export as lightweight JPEG at 70% quality
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve(compressedDataUrl.split(',')[1]); // Extract base64
+                    };
+                    img.src = e.target.result;
+                };
                 reader.readAsDataURL(file); 
             });
-            mimeType = file.type; 
-            filename = file.name;
+            
+            // Override with standard web formats since we compressed it
+            mimeType = "image/jpeg"; 
+            filename = targetName.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".jpg";
         }
+        // -----------------------------------
         
         const payload = { 
             action: fileData ? "addWithImage" : "add", 
@@ -1085,8 +1114,7 @@ async function handleAddProduct(event) {
         
         showToast("Product & Image saved!", "success"); 
         document.getElementById('addProductForm').reset(); 
-        // Hide the image preview after saving
-document.getElementById('image-preview-container').style.display = 'none';
+        document.getElementById('image-preview-container').style.display = 'none';
         closeAllModals(); 
         setTimeout(loadManagerData, 2000);
     } catch (error) { 
@@ -1095,9 +1123,6 @@ document.getElementById('image-preview-container').style.display = 'none';
         btn.innerText = "Add to Inventory"; btn.disabled = false; 
     }
 }
-// Variable to remember what to do after the user clicks "OK"
-let customAlertCallback = null;
-
 function showCustomAlert(message, callback) {
     // Insert the text
     document.getElementById('customAlertMessage').innerText = message;
