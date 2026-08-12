@@ -599,10 +599,10 @@ async function renderManagerCatalog(products) {
                     <img id="${imgId}" src="https://placehold.co/150x150/f8fafc/b38728?text=Loading...">
                 </div>
                 
-                <!-- NEW REMOVE PHOTO BUTTON -->
-                <div style="text-align: center; margin-top: -5px; margin-bottom: 5px;">
-                    <span onclick="removeProductImage('${encP}', '${encN}')" style="font-size: 10px; color: #dc3545; cursor: pointer; text-decoration: underline; font-weight: bold;">Remove Photo</span>
-                </div>
+               <!-- NEW REMOVE PHOTO BUTTON -->
+<div style="text-align: center; margin-top: -5px; margin-bottom: 5px;">
+    <span onclick="removeProductImage('${encP}', '${encN}', '${imgId}')" style="font-size: 10px; color: #dc3545; cursor: pointer; text-decoration: underline; font-weight: bold;">Remove Photo</span>
+</div>
                 <!-- ----------------------- -->
 
                 <div class="card-info">
@@ -759,14 +759,14 @@ function makeEditable(rowId, encB, encN, encS, oldMrp, oldRate) {
             ₹ <input type="number" id="edit-rate-${rowId}" value="${oldRate}" style="${priceStyle}">
         </div>`;
     
-    // 5. Actions
+   // 5. Actions
     row.cells[4].innerHTML = `
         <div style="display: flex; gap: 6px; justify-content: flex-end;">
-            <button onclick="saveInLine('${rowId}', '${encB}', '${encN}', '${encS}')" 
+            <button type="button" onclick="saveInLine('${rowId}', '${encB}', '${encN}', '${encS}')" 
                     style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer; letter-spacing:0.5px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
                 SAVE
             </button>
-            <button onclick="location.reload()" 
+            <button type="button" onclick="cancelEdit('${rowId}', '${encB}', '${encN}', '${encS}', '${oldMrp}', '${oldRate}')" 
                     style="background:#94a3b8; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
                 X
             </button>
@@ -846,14 +846,27 @@ async function saveInLine(rowId, encB, encN, encS) {
         actionCell.innerHTML = `<span style="color:red; font-weight:bold; font-size:11px;">ERROR</span>`;
     }
 }
-function cancelEditSafe(rowId, encS, oldMrp, encB, encN) {
+function cancelEdit(rowId, encB, encN, encS, oldMrp, oldRate) {
     const row = document.getElementById(rowId);
-    row.querySelector('td:nth-child(1)').innerText = decodeURIComponent(encB).toUpperCase();
-    row.querySelector('.size-cell').innerText = decodeURIComponent(encS); 
-    row.querySelector('.mrp-cell').innerText = "₹" + oldMrp;
-    row.querySelector('td:last-child').innerHTML = `
-        <span class="action-icon edit-icon" onclick="makeEditable('${rowId}', '${encB}', '${encN}', '${encS}', '${oldMrp}')"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/></svg></span>
-        <span class="action-icon delete-row-icon" onclick="deleteRowSafe('${encB}', '${encN}', '${encS}', '${rowId}')"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg></span>`;
+    
+    // Restore original text safely without refreshing
+    row.cells[0].innerHTML = decodeURIComponent(encB);
+    row.cells[1].innerHTML = decodeURIComponent(encS) || "-";
+    row.cells[2].innerHTML = `₹${oldMrp}`;
+    row.cells[3].innerHTML = `₹${oldRate}`;
+    
+    // Restore the sleek Edit and Delete icons
+    row.cells[4].innerHTML = `
+        <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+            <span class="action-icon edit-icon" style="cursor:pointer; color:#b38728; transition: 0.2s;" 
+                  onclick="makeEditable('${rowId}', '${encB}', '${encN}', '${encS}', '${oldMrp}', '${oldRate}')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </span>
+            <span class="action-icon delete-icon" style="cursor:pointer; color:#ef4444; transition: 0.2s;" 
+                  onclick="deleteRowSafe('${encB}', '${encN}', '${encS}', '${rowId}')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </span>
+        </div>`;
 }
 function showUndoToast(message, actionData) {
     if (deleteTimeout) executeFinalDelete();
@@ -1252,7 +1265,6 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
-    // fileInput.capture = 'environment'; // Uncomment this to force mobile camera instead of gallery
     
     fileInput.onchange = async (e) => {
         const file = e.target.files[0];
@@ -1266,6 +1278,8 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
         if (typeof showToast === "function") showToast("Compressing & Uploading...", "info");
 
         try {
+            let displayUrl = ""; // This will hold the image so we can show it instantly
+
             // 3. The Smart Compressor
             const fileData = await new Promise((resolve) => { 
                 const reader = new FileReader();
@@ -1287,14 +1301,18 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+                        
+                        // Save the full image URL for the screen
+                        displayUrl = canvas.toDataURL('image/jpeg', 0.7); 
+                        // Send ONLY the raw data to Google
+                        resolve(displayUrl.split(',')[1]); 
                     };
                     img.src = evt.target.result;
                 };
                 reader.readAsDataURL(file); 
             });
 
-            // 4. Send to Google
+            // 4. Send to Google silently
             const payload = {
                 action: "updateImage",
                 brand: brand,
@@ -1313,8 +1331,15 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
 
             if (typeof showToast === "function") showToast("Image updated successfully!", "success");
             
-            // 5. Reload the catalog to pull the fresh image link
-            setTimeout(() => { if (typeof loadManagerData === "function") loadManagerData(); }, 1500);
+            // 5. THE FIX: Update the image on screen INSTANTLY without reloading!
+            imgElement.src = displayUrl;
+
+            // Update the local memory so it stays there if you use the search bar
+            const matchingProduct = allProducts.find(p => p.brand === brand && p.name === name);
+            if (matchingProduct) {
+                matchingProduct.image = displayUrl;
+                matchingProduct.imgUrl = displayUrl;
+            }
 
         } catch (error) {
             imgElement.src = oldSrc; // Revert image on crash
@@ -1325,37 +1350,55 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
     // Simulate a click to open the file browser / camera
     fileInput.click();
 }
-async function removeProductImage(encBrand, encName) {
-    if (!confirm("Are you sure you want to remove the photo for this product?")) return;
-
+function removeProductImage(encBrand, encName, imgId) {
     const brand = decodeURIComponent(encBrand);
     const name = decodeURIComponent(encName);
 
-    if (typeof showToast === "function") showToast("Removing image...", "info");
+    askBeforeDelete(
+        "Remove Photo?", 
+        `Are you sure you want to remove the photo for <b>${name}</b>?`, 
+        async () => {
+            if (typeof showToast === "function") showToast("Removing image...", "info");
 
-    try {
-        const payload = {
-            action: "removeImage",
-            brand: brand,
-            name: name
-        };
+            // 1. Instantly change the image on screen to "Removing..."
+            const imgElement = document.getElementById(imgId);
+            const oldSrc = imgElement.src;
+            imgElement.src = "https://placehold.co/150x150/f8fafc/b38728?text=Removing...";
 
-        await fetch(webAppUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(payload)
-        });
+            try {
+                const payload = {
+                    action: "removeImage",
+                    brand: brand,
+                    name: name
+                };
 
-        if (typeof showToast === "function") showToast("Image removed successfully!", "success");
+                // 2. Send the delete command to Google silently
+                await fetch(webAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
 
-        // Reload the catalog so the picture turns back into the "No Photo" placeholder
-        setTimeout(() => { if (typeof loadManagerData === "function") loadManagerData(); }, 1500);
+                if (typeof showToast === "function") showToast("Image removed successfully!", "success");
 
-    } catch (error) {
-        console.error(error);
-        if (typeof showToast === "function") showToast("Failed to remove image.", "error");
-    }
+                // 3. Change to "No Photo" placeholder WITHOUT reloading the page!
+                imgElement.src = "https://placehold.co/150x150/f8fafc/b38728?text=No+Photo";
+
+                // 4. Update the local memory so it stays removed if you search later
+                const matchingProduct = allProducts.find(p => p.brand === brand && p.name === name);
+                if (matchingProduct) {
+                    matchingProduct.image = "";
+                    matchingProduct.imgUrl = "";
+                }
+
+            } catch (error) {
+                console.error(error);
+                imgElement.src = oldSrc; // Revert the image if there was a crash
+                if (typeof showToast === "function") showToast("Failed to remove image.", "error");
+            }
+        }
+    );
 }
 loadManagerData();
 </script>
