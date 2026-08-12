@@ -594,7 +594,9 @@ async function renderManagerCatalog(products) {
             html += `
             <div class="product-card" id="${cardId}" data-search="${p.rawSearch}">
                 <button onclick="deleteProductGroup('${encN}', '${encC}', '${encP}', false, '${cardId}')" class="btn-delete"><img src="https://cdn-icons-png.flaticon.com/512/1214/1214428.png" style="width:14px;"></button>
-                <div class="img-holder"><img id="${imgId}" src="https://placehold.co/150x150/f8fafc/b38728?text=Loading..."></div>
+                <div class="img-holder" onclick="triggerImageUpdate('${encP}', '${encN}', '${imgId}')" style="cursor: pointer;" title="Click to upload/change photo">
+    <img id="${imgId}" src="https://placehold.co/150x150/f8fafc/b38728?text=Loading...">
+</div>
                 <div class="card-info">
                     <div class="brand-tag">${p.brand}</div>
                     <div class="item-name">${p.name}</div>
@@ -1234,7 +1236,87 @@ function previewImage(event) {
         previewContainer.style.display = 'none';
     }
 }
+async function triggerImageUpdate(encBrand, encName, imgId) {
+    const brand = decodeURIComponent(encBrand);
+    const name = decodeURIComponent(encName);
+    
+    // 1. Create an invisible file uploader
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    // fileInput.capture = 'environment'; // Uncomment this to force mobile camera instead of gallery
+    
+    fileInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
+        // 2. Visual feedback: Change the image to say "Uploading..."
+        const imgElement = document.getElementById(imgId);
+        const oldSrc = imgElement.src;
+        imgElement.src = "https://placehold.co/150x150/f8fafc/b38728?text=Uploading...";
+        
+        if (typeof showToast === "function") showToast("Compressing & Uploading...", "info");
+
+        try {
+            // 3. The Smart Compressor
+            const fileData = await new Promise((resolve) => { 
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; // Shrink for fast loading
+                        const MAX_HEIGHT = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        } else {
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        }
+                        
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+                    };
+                    img.src = evt.target.result;
+                };
+                reader.readAsDataURL(file); 
+            });
+
+            // 4. Send to Google
+            const payload = {
+                action: "updateImage",
+                brand: brand,
+                name: name,
+                fileData: fileData,
+                mimeType: "image/jpeg",
+                filename: name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".jpg"
+            };
+
+            await fetch(webAppUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(payload)
+            });
+
+            if (typeof showToast === "function") showToast("Image updated successfully!", "success");
+            
+            // 5. Reload the catalog to pull the fresh image link
+            setTimeout(() => { if (typeof loadManagerData === "function") loadManagerData(); }, 1500);
+
+        } catch (error) {
+            imgElement.src = oldSrc; // Revert image on crash
+            if (typeof showToast === "function") showToast("Failed to upload image.", "error");
+        }
+    };
+    
+    // Simulate a click to open the file browser / camera
+    fileInput.click();
+}
 loadManagerData();
 </script>
 </body>
