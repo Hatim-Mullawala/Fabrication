@@ -594,9 +594,17 @@ async function renderManagerCatalog(products) {
             html += `
             <div class="product-card" id="${cardId}" data-search="${p.rawSearch}">
                 <button onclick="deleteProductGroup('${encN}', '${encC}', '${encP}', false, '${cardId}')" class="btn-delete"><img src="https://cdn-icons-png.flaticon.com/512/1214/1214428.png" style="width:14px;"></button>
+                
                 <div class="img-holder" onclick="triggerImageUpdate('${encP}', '${encN}', '${imgId}')" style="cursor: pointer;" title="Click to upload/change photo">
-    <img id="${imgId}" src="https://placehold.co/150x150/f8fafc/b38728?text=Loading...">
-</div>
+                    <img id="${imgId}" src="https://placehold.co/150x150/f8fafc/b38728?text=Loading...">
+                </div>
+                
+                <!-- NEW REMOVE PHOTO BUTTON -->
+                <div style="text-align: center; margin-top: -5px; margin-bottom: 5px;">
+                    <span onclick="removeProductImage('${encP}', '${encN}')" style="font-size: 10px; color: #dc3545; cursor: pointer; text-decoration: underline; font-weight: bold;">Remove Photo</span>
+                </div>
+                <!-- ----------------------- -->
+
                 <div class="card-info">
                     <div class="brand-tag">${p.brand}</div>
                     <div class="item-name">${p.name}</div>
@@ -1316,6 +1324,38 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
     
     // Simulate a click to open the file browser / camera
     fileInput.click();
+}
+async function removeProductImage(encBrand, encName) {
+    if (!confirm("Are you sure you want to remove the photo for this product?")) return;
+
+    const brand = decodeURIComponent(encBrand);
+    const name = decodeURIComponent(encName);
+
+    if (typeof showToast === "function") showToast("Removing image...", "info");
+
+    try {
+        const payload = {
+            action: "removeImage",
+            brand: brand,
+            name: name
+        };
+
+        await fetch(webAppUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+        });
+
+        if (typeof showToast === "function") showToast("Image removed successfully!", "success");
+
+        // Reload the catalog so the picture turns back into the "No Photo" placeholder
+        setTimeout(() => { if (typeof loadManagerData === "function") loadManagerData(); }, 1500);
+
+    } catch (error) {
+        console.error(error);
+        if (typeof showToast === "function") showToast("Failed to remove image.", "error");
+    }
 }
 loadManagerData();
 </script>
