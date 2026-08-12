@@ -560,15 +560,25 @@ async function renderManagerCatalog(products) {
             const bClean = String(p.brand).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
             const cClean = String(p.cat).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
 
-            // --- THE FIX: SMART IMAGE SEARCH NOW CHECKS GOOGLE DRIVE FIRST ---
+            // --- THE BULLETPROOF IMAGE SEARCH ---
             const paths = [];
             
-            // 1. Check Google Drive FIRST (Matches Column H named "Image")
-            if (p.image && p.image.trim() !== "") {
-                paths.push(String(p.image).trim());
+            // 1. Search every single column for a link (Ignores headers completely!)
+            let foundLink = null;
+            for (const key in p) {
+                const val = String(p[key]).trim();
+                // If the cell contains a Google web link, grab it!
+                if (val.startsWith("http") && (val.includes("google") || val.includes("drive"))) {
+                    foundLink = val;
+                    break;
+                }
+            }
+            
+            if (foundLink) {
+                paths.push(foundLink);
             }
 
-            // 2. Fallbacks: Local folders
+            // 2. Fallbacks: Look in your local folder if no Drive link exists
             paths.push(`fabrication-img/${bClean}-${nClean}.jpg`);
             paths.push(`fabrication-img/${nClean}.jpg`);           
             paths.push(`fabrication-img/${bClean}.jpg`);           
