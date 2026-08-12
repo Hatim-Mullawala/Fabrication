@@ -602,7 +602,6 @@ async function loadFabricationData() {
         document.getElementById('syncStatus').innerText = "❌ Sync Failed. Check Connection.";
     }
 }
-
 async function renderFrontPage(products) {
     const container = document.getElementById('catalog-container');
     if (!container) return;
@@ -647,14 +646,30 @@ async function renderFrontPage(products) {
             const bClean = String(p.brand).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
             const cClean = String(p.cat).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
 
-            // Standardized image paths for fabrication
-            // --- UPGRADED SMART IMAGE SEARCH ---
-        const paths = [
-            `fabrication-img/${bClean}-${nClean}.jpg`, // 1. Looks for the specific brand+product (pidilite-heatx.jpg)
-            `fabrication-img/${nClean}.jpg`,           // 2. Looks for just the product name (heatx.jpg)
-            `fabrication-img/${bClean}.jpg`,           // 3. ✨ NEW: Fallback to just the Brand name! (pidilite.jpg)
-            `fabrication-img/${cClean}.jpg`            // 4. ✨ NEW: Fallback to just the Category name! (adhesives.jpg)
-        ];
+            // --- THE BULLETPROOF IMAGE SEARCH (FOR MAIN CATALOGUE) ---
+            const paths = [];
+            
+            // 1. Search every single column for a link (Ignores headers completely!)
+            let foundLink = null;
+            for (const key in p) {
+                const val = String(p[key]).trim();
+                // If the cell contains a Google web link, grab it!
+                if (val.startsWith("http") && (val.includes("google") || val.includes("drive") || val.includes("googleusercontent"))) {
+                    foundLink = val;
+                    break;
+                }
+            }
+            
+            if (foundLink) {
+                paths.push(foundLink);
+            }
+
+            // 2. Fallbacks: Look in your local folder if no Drive link exists
+            paths.push(`fabrication-img/${bClean}-${nClean}.jpg`); // 1. Looks for the specific brand+product (pidilite-heatx.jpg)
+            paths.push(`fabrication-img/${nClean}.jpg`);           // 2. Looks for just the product name (heatx.jpg)
+            paths.push(`fabrication-img/${bClean}.jpg`);           // 3. Fallback to just the Brand name! (pidilite.jpg)
+            paths.push(`fabrication-img/${cClean}.jpg`);           // 4. Fallback to just the Category name! (adhesives.jpg)
+            // -----------------------------------------------------------------
 
             const encN = encodeURIComponent(p.name).replace(/'/g, "%27");
             const encC = encodeURIComponent(catName).replace(/'/g, "%27");
@@ -664,7 +679,8 @@ async function renderFrontPage(products) {
 
             // Connects perfectly to your newly cleaned openModal function
             let clickAction = `openModal('${encN}', '${encC}', '${encBrand}', '', '${encS}')`;
-// The critical fix here is "white-space: normal" and "word-wrap" to prevent cutting!
+            
+            // The critical fix here is "white-space: normal" and "word-wrap" to prevent cutting!
             // Exact font-weights, colors, and letter-spacing from your screenshot
             const titleHTML = `
                    <div style="font-size:12px; color:var(--primary-gold); font-weight:900; text-transform:uppercase; margin-bottom:8px; width:100%; white-space:normal; word-wrap:break-word; letter-spacing:0.5px;">
