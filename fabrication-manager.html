@@ -811,6 +811,9 @@ function openModal(encN, encC, encP, isAutoHinge) {
         </tr>`;
     });
     
+    // Create a fake history state so the mobile back button works!
+    window.history.pushState({ modal: 'priceModal' }, "", "#edit");
+    
     document.getElementById('priceModal').style.display = "flex";
 }
 function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
@@ -1326,7 +1329,22 @@ function logout() { sessionStorage.removeItem('managerAuth'); window.location.hr
 function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
 window.onscroll = () => document.getElementById("backToTop").style.display = (window.scrollY > 300) ? "flex" : "none";
 function toggleAddModal() { const m = document.getElementById('addProductModal'), b = document.getElementById('modalBackdrop'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
-function closeAllModals() { document.getElementById('priceModal').style.display = 'none'; document.getElementById('addProductModal').style.display = 'none'; document.getElementById('modalBackdrop').style.display = 'none'; document.body.style.overflow = 'auto'; }
+function closeAllModals() { 
+    document.getElementById('priceModal').style.display = 'none'; 
+    
+    const addModal = document.getElementById('addProductModal');
+    if(addModal) addModal.style.display = 'none';
+    
+    const backdrop = document.getElementById('modalBackdrop');
+    if(backdrop) backdrop.style.display = 'none';
+    
+    document.body.style.overflow = 'auto'; 
+    
+    // If the user clicked 'X', automatically clear the fake history step behind the scenes!
+    if(window.location.hash === "#edit") {
+        window.history.back(); 
+    }
+}
 
 function previewImage(event) {
     const file = event.target.files[0];
@@ -1557,6 +1575,20 @@ function askForNewName(oldName) {
         };
     });
 }
+// Intercept the system 'Back' button
+window.addEventListener("popstate", function(event) {
+    // Force all modals to close instead of leaving the app
+    document.getElementById('priceModal').style.display = 'none';
+    
+    // (Also close your Add Product modal just in case that one was open)
+    const addModal = document.getElementById('addProductModal');
+    if(addModal) addModal.style.display = 'none';
+    
+    const backdrop = document.getElementById('modalBackdrop');
+    if(backdrop) backdrop.style.display = 'none';
+    
+    document.body.style.overflow = 'auto';
+});
 loadManagerData();
 </script>
 <!-- CUSTOM PROFESSIONAL RENAME MODAL -->
