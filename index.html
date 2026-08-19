@@ -241,6 +241,78 @@
         cursor: pointer;
         padding: 0;
     }
+    /* --- PREMIUM MOBILE RESPONSIVE MODAL (MAIN CATALOGUE) --- */
+@media (max-width: 768px) {
+    /* 1. Force the overlay to act as a padded container */
+    #priceModal, #productModal {
+        padding: 20px !important; 
+        align-items: center !important; 
+        box-sizing: border-box !important;
+    }
+    
+    /* 2. Style the inner white modal box */
+    #priceModal > div, #productModal > div {
+        width: 100% !important;
+        max-height: 85vh !important; 
+        border-radius: 16px !important; 
+        padding: 24px 16px !important; 
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2) !important;
+        overflow-y: auto !important; 
+        margin: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 3. Fix the Header text overlapping the Close button */
+    #modalTitle {
+        font-size: 22px !important;
+        padding-right: 45px !important; 
+        line-height: 1.2 !important;
+        margin-bottom: 8px !important;
+    }
+
+    /* 4. Hide the static desktop headers */
+    .modal-header-row { display: none !important; }
+    
+    /* 5. Polish the Individual Size Cards */
+    .responsive-row {
+        flex-direction: column !important;
+        background: #ffffff !important;
+        margin-top: 15px !important; 
+        margin-bottom: 15px !important;
+        border: 1px solid #cbd5e1 !important; 
+        border-radius: 12px !important;
+        padding: 0 !important; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
+        overflow: hidden !important; 
+    }
+    
+    /* 6. Arrange the rows inside the cards perfectly */
+    .responsive-cell {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 12px 16px !important;
+        text-align: right !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .responsive-cell:last-child { 
+        border-bottom: none !important; 
+        background: #f8fafc !important; 
+    } 
+    
+    /* Auto-generates the crisp labels on the left */
+    .responsive-cell::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: 900;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+}
     </style>
 </head>
 <body>
