@@ -215,6 +215,51 @@
     color: #1e293b;
     font-weight: 800;
 }
+/* --- MOBILE RESPONSIVE MODAL TABLE --- */
+@media (max-width: 768px) {
+    .modal-header-row { 
+        display: none !important; /* Hides the static column titles */
+    }
+    
+    .responsive-row {
+        flex-direction: column !important;
+        background: #ffffff;
+        margin-bottom: 12px;
+        border: 2px solid #f1f5f9 !important;
+        border-radius: 8px;
+        padding: 8px 12px;
+    }
+    
+    .responsive-cell {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 10px 0 !important;
+        text-align: right !important;
+        border-bottom: 1px solid #f8fafc;
+    }
+    .responsive-cell:last-child { border-bottom: none; }
+    
+    /* Automatically generates labels on the left side */
+    .responsive-cell::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-right: 15px;
+    }
+    
+    /* Ensure Edit Inputs shrink nicely to fit mobile screens */
+    .responsive-cell input {
+        max-width: 120px !important;
+    }
+    
+    /* Push Action buttons to the right and hide their label */
+    .action-cell { justify-content: flex-end !important; }
+    .action-cell::before { display: none !important; } 
+}
     </style>
 </head>
 <body>
@@ -333,15 +378,14 @@
         <p id="modalBrand" style="font-weight: bold; color: #666; margin-bottom: 15px;"></p>
         <table class="modal-table">
            <thead style="display: block; width: 100%;">
-    <tr style="display: flex; align-items: center; border-bottom: 2px solid #eee; width: 100%;">
-        <th style="padding:12px; flex: 1.5; text-align: left; font-size: 13px; color: #333;">Brand</th>
-        <th style="padding:12px; flex: 1; text-align: left; font-size: 13px; color: #333;">Size</th>
-        
-        <th style="padding:12px; flex: 1; text-align: center; font-size: 13px; color: #333;">MRP</th>
-        <th style="padding:12px; flex: 1; text-align: center; font-size: 13px; color: #333; white-space: nowrap;">Selling Rate</th>
-        
-        <th style="padding:12px; flex: 1; text-align: right; font-size: 13px; color: #333;">Actions</th>
-    </tr>
+    <tr class="modal-header-row" style="display: flex; width: 100%; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px; color: #1a2942;">
+    <th style="flex: 1.5; text-align: left; padding: 0 12px;">Brand</th>
+    <th style="flex: 1; text-align: left; padding: 0 12px;">Size</th>
+    <th style="flex: 1; text-align: center; padding: 0 12px; color: #0284c7;">Purchase</th> 
+    <th style="flex: 1; text-align: center; padding: 0 12px;">MRP</th>
+    <th style="flex: 1; text-align: center; padding: 0 12px;">Selling Rate</th>
+    <th style="flex: 1; text-align: right; padding: 0 12px;">Actions</th>
+</tr>
 </thead>
             <tbody id="modalTableBody"></tbody>
         </table>
@@ -418,6 +462,8 @@ function handleGoogleResponse(response) {
             brand: String(entry['brand'] || "").trim(),
             name: String(entry['product name'] || "").trim(),
             specs: String(entry['specifications'] || "").trim(),
+            // --- NEW: GRAB PURCHASE PRICE FROM JSON ---
+            purchasePrice: String(entry['purchase price'] || entry['Purchase Price'] || entry['purchaseprice'] || "").trim() || "0",
             mrp: String(entry['mrp'] || entry['MRP'] || entry['Mrp'] || entry['mrp '] || entry['MRP '] || "").trim() || "0",
             sellingrate: String(entry['selling rate'] || entry['Selling Rate'] || entry['sellingrate'] || "").trim() || "0",
             imgUrl: String(entry['image'] || entry['Image'] || entry['IMAGE'] || "").trim(),
@@ -432,7 +478,6 @@ function handleGoogleResponse(response) {
 
     populateCats(allProducts);
     
-    // If this was an older function, it is safe to keep or delete.
     if (typeof populateSuggestions === 'function') {
         populateSuggestions(allProducts);
     }
@@ -692,32 +737,35 @@ function openModal(encN, encC, encP, isAutoHinge) {
     // Simple sorting by size
     collectedSizes.sort((a, b) => a.cleanS.localeCompare(b.cleanS, undefined, { numeric: true }));
 
-    collectedSizes.forEach(item => {
+   collectedSizes.forEach(item => {
         const encB = encodeURIComponent(item.brand).replace(/'/g, "%27");
         const encN2 = encodeURIComponent(item.v.name).replace(/'/g, "%27");
         const encS = encodeURIComponent(item.cleanS).replace(/'/g, "%27");
+        const purchasePrice = item.v.purchasePrice || "0"; 
         const sellingRate = item.v.sellingrate || "0"; 
         
-        // Display "-" if specs are empty, otherwise show the spec
         const displayS = item.cleanS || "-"; 
 
         tbody.innerHTML += `
-        <tr id="${item.rowId}" style="border-bottom:1px solid #f1f5f9; display: flex; align-items: center; width: 100%;">
-            <td style="padding:12px; flex: 1.5; text-align: left; color:#b38728; font-weight:800; font-size:12px; text-transform:uppercase;">
+        <tr id="${item.rowId}" class="responsive-row" style="border-bottom:1px solid #f1f5f9; display: flex; align-items: center; width: 100%;">
+            <td class="responsive-cell" data-label="Brand" style="padding:12px; flex: 1.5; text-align: left; color:#b38728; font-weight:800; font-size:12px; text-transform:uppercase;">
                 ${item.brand}
             </td>
-            <td style="padding:12px; flex: 1; text-align: left; font-weight:700; font-size:12px; color:#334155;">
+            <td class="responsive-cell" data-label="Size" style="padding:12px; flex: 1; text-align: left; font-weight:700; font-size:12px; color:#334155;">
                 ${displayS}
             </td>
-            <td style="padding:12px; flex: 1; text-align: center; color: #b38728; font-weight:700; font-size:13px;">
+            <td class="responsive-cell" data-label="Purchase" style="padding:12px; flex: 1; text-align: center; color: #0284c7; font-weight:700; font-size:13px;">
+                ₹${purchasePrice}
+            </td>
+            <td class="responsive-cell" data-label="MRP" style="padding:12px; flex: 1; text-align: center; color: #b38728; font-weight:700; font-size:13px;">
                 ₹${item.matchedMRP}
             </td>
-            <td class="rate-cell" style="padding:12px; flex: 1; text-align: center; font-weight:700; color:#10b981; font-size:13px;">
+            <td class="responsive-cell" data-label="Rate" style="padding:12px; flex: 1; text-align: center; font-weight:700; color:#10b981; font-size:13px;">
                 ₹${sellingRate}
             </td>
-            <td style="padding:12px; flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+            <td class="responsive-cell action-cell" style="padding:12px; flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
                 <span class="action-icon edit-icon" style="cursor:pointer; color:#b38728; transition: 0.2s;" 
-                      onclick="makeEditable('${item.rowId}', '${encB}', '${encN2}', '${encS}', '${item.matchedMRP}', '${sellingRate}')">
+                      onclick="makeEditable('${item.rowId}', '${encB}', '${encN2}', '${encS}', '${purchasePrice}', '${item.matchedMRP}', '${sellingRate}')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 </span>
                 <span class="action-icon delete-icon" style="cursor:pointer; color:#ef4444; transition: 0.2s;" 
@@ -730,58 +778,53 @@ function openModal(encN, encC, encP, isAutoHinge) {
     
     document.getElementById('priceModal').style.display = "flex";
 }
-function makeEditable(rowId, encB, encN, encS, oldMrp, oldRate) {
+function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
     const row = document.getElementById(rowId);
     
-    // THE FIX: Decode the text and safely escape all double quotes!
     const cleanBrand = decodeURIComponent(encB).replace(/"/g, '&quot;');
     const cleanSize = decodeURIComponent(encS).replace(/"/g, '&quot;');
 
-    // Clean, crisp styles
     const textStyle = "width:100%; max-width:90px; padding:6px 8px; border:2px solid #b38728; border-radius:4px; font-weight:bold; font-size:12px; color:#333; outline:none; box-sizing:border-box;";
     const priceStyle = "width:100%; max-width:70px; padding:6px 8px; border:2px solid #10b981; border-radius:4px; font-weight:bold; font-size:12px; color:#333; outline:none; box-sizing:border-box;";
 
-    // 1. Brand 
     row.cells[0].innerHTML = `<input type="text" id="edit-brand-${rowId}" value="${cleanBrand}" style="${textStyle}">`;
-    
-    // 2. Size (Now uses the cleanSize variable so inch marks stay!)
     row.cells[1].innerHTML = `<input type="text" id="edit-size-${rowId}" value="${cleanSize}" style="${textStyle}">`;
     
-    // 3. MRP 
+    // NEW: Purchase Price Input
     row.cells[2].innerHTML = `
+        <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#0284c7;">
+            ₹ <input type="number" id="edit-purchase-${rowId}" value="${oldPur}" style="${priceStyle}; border-color:#0284c7;">
+        </div>`;
+    
+    row.cells[3].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#b38728;">
             ₹ <input type="number" id="edit-mrp-${rowId}" value="${oldMrp}" style="${priceStyle}">
         </div>`;
     
-    // 4. Selling Rate 
-    row.cells[3].innerHTML = `
+    row.cells[4].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#27ae60;">
             ₹ <input type="number" id="edit-rate-${rowId}" value="${oldRate}" style="${priceStyle}">
         </div>`;
     
-   // 5. Actions
-    row.cells[4].innerHTML = `
+   // Actions are now Cell 5
+    row.cells[5].innerHTML = `
         <div style="display: flex; gap: 6px; justify-content: flex-end;">
             <button type="button" onclick="saveInLine('${rowId}', '${encB}', '${encN}', '${encS}')" 
-                    style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer; letter-spacing:0.5px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                SAVE
-            </button>
-            <button type="button" onclick="cancelEdit('${rowId}', '${encB}', '${encN}', '${encS}', '${oldMrp}', '${oldRate}')" 
-                    style="background:#94a3b8; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                X
-            </button>
+                    style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer; letter-spacing:0.5px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">SAVE</button>
+            <button type="button" onclick="cancelEdit('${rowId}', '${encB}', '${encN}', '${encS}', '${oldPur}', '${oldMrp}', '${oldRate}')" 
+                    style="background:#94a3b8; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">X</button>
         </div>`;
 }
 async function saveInLine(rowId, encB, encN, encS) {
     const row = document.getElementById(rowId);
-    const actionCell = row.cells[4];
+    const actionCell = row.cells[5]; // UPDATED TO INDEX 5
 
-    // Change button to SYNCING...
     actionCell.innerHTML = `<span style="color:#b38728; font-weight:bold; font-size:11px;">SYNCING...</span>`;
 
     try {
         const newBrand = document.getElementById(`edit-brand-${rowId}`).value;
         const newSize = document.getElementById(`edit-size-${rowId}`).value;
+        const newPurchase = document.getElementById(`edit-purchase-${rowId}`).value; // GRABBING THE VALUE
         const newMrp = document.getElementById(`edit-mrp-${rowId}`).value;
         const newRate = document.getElementById(`edit-rate-${rowId}`).value;
 
@@ -789,7 +832,6 @@ async function saveInLine(rowId, encB, encN, encS) {
         const name = decodeURIComponent(encN);
         const oldSize = decodeURIComponent(encS);
 
-        // 1. Send to Google (Your backend will find it by Brand + Name + Size)
         fetch(webAppUrl, {
             method: "POST",
             mode: "no-cors",
@@ -801,26 +843,26 @@ async function saveInLine(rowId, encB, encN, encS) {
                 oldSize: oldSize, 
                 newBrand: newBrand,
                 newSize: newSize, 
+                newPurchase: newPurchase, // SEND TO GOOGLE
                 newPrice: newMrp, 
                 newRate: newRate
             })
         });
 
-        // 2. Update the UI instantly
         setTimeout(() => {
             row.cells[0].innerHTML = newBrand;
             row.cells[1].innerHTML = newSize;
-            row.cells[2].innerHTML = `₹${newMrp}`;
-            row.cells[3].innerHTML = `₹${newRate}`;
+            row.cells[2].innerHTML = `₹${newPurchase}`; // RESTORE PURCHASE CELL
+            row.cells[3].innerHTML = `₹${newMrp}`;      // SHIFTED MRP
+            row.cells[4].innerHTML = `₹${newRate}`;     // SHIFTED RATE
 
-            // Re-encode data so the Edit button continues to work flawlessly
             const newEncB = encodeURIComponent(newBrand).replace(/'/g, "%27");
             const newEncS = encodeURIComponent(newSize).replace(/'/g, "%27");
 
             actionCell.innerHTML = `
                 <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
                     <span class="action-icon edit-icon" style="cursor:pointer; color:#b38728; transition: 0.2s;" 
-                          onclick="makeEditable('${rowId}', '${newEncB}', '${encN}', '${newEncS}', '${newMrp}', '${newRate}')">
+                          onclick="makeEditable('${rowId}', '${newEncB}', '${encN}', '${newEncS}', '${newPurchase}', '${newMrp}', '${newRate}')">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </span>
                     <span class="action-icon delete-icon" style="cursor:pointer; color:#ef4444; transition: 0.2s;" 
@@ -831,22 +873,20 @@ async function saveInLine(rowId, encB, encN, encS) {
 
             if (typeof showToast === "function") showToast("Database Updated", "success");
 
-            // 3. THE CRITICAL FIX: Find the EXACT row in local memory by matching the Size too!
             const productVariant = allProducts.find(p => 
                 String(p.name).trim().toLowerCase() === name.toLowerCase() && 
                 String(p.brand).trim().toLowerCase() === oldBrand.toLowerCase() &&
                 String(p.specs).trim().toLowerCase() === oldSize.toLowerCase()
             );
 
-            // Update ONLY that specific variant so the others don't glitch
             if (productVariant) {
                  productVariant.brand = newBrand;
                  productVariant.specs = newSize;
+                 productVariant.purchasePrice = newPurchase; // UPDATE MEMORY
                  productVariant.mrp = newMrp;
                  productVariant.sellingrate = newRate;
             }
 
-            // Silent background sync
             const script = document.createElement('script');
             script.src = `${webAppUrl}?callback=handleGoogleResponse&t=${Date.now()}`;
             document.body.appendChild(script);
@@ -858,20 +898,19 @@ async function saveInLine(rowId, encB, encN, encS) {
         actionCell.innerHTML = `<span style="color:red; font-weight:bold; font-size:11px;">ERROR</span>`;
     }
 }
-function cancelEdit(rowId, encB, encN, encS, oldMrp, oldRate) {
+function cancelEdit(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
     const row = document.getElementById(rowId);
     
-    // Restore original text safely without refreshing
     row.cells[0].innerHTML = decodeURIComponent(encB);
     row.cells[1].innerHTML = decodeURIComponent(encS) || "-";
-    row.cells[2].innerHTML = `₹${oldMrp}`;
-    row.cells[3].innerHTML = `₹${oldRate}`;
+    row.cells[2].innerHTML = `₹${oldPur}`; // RESTORE PURCHASE
+    row.cells[3].innerHTML = `₹${oldMrp}`;
+    row.cells[4].innerHTML = `₹${oldRate}`;
     
-    // Restore the sleek Edit and Delete icons
-    row.cells[4].innerHTML = `
+    row.cells[5].innerHTML = `
         <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
             <span class="action-icon edit-icon" style="cursor:pointer; color:#b38728; transition: 0.2s;" 
-                  onclick="makeEditable('${rowId}', '${encB}', '${encN}', '${encS}', '${oldMrp}', '${oldRate}')">
+                  onclick="makeEditable('${rowId}', '${encB}', '${encN}', '${encS}', '${oldPur}', '${oldMrp}', '${oldRate}')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             </span>
             <span class="action-icon delete-icon" style="cursor:pointer; color:#ef4444; transition: 0.2s;" 
