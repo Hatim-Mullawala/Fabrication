@@ -242,57 +242,61 @@
         padding: 0;
     }
     /* --- PREMIUM MOBILE RESPONSIVE MODAL (MAIN CATALOGUE) --- */
+/* --- TRUE FLOATING POPUP MODAL (MOBILE) --- */
 @media (max-width: 768px) {
-    /* 1. Force the overlay to act as a padded container */
-    #priceModal, #productModal {
-        padding: 20px !important; 
-        align-items: center !important; 
+    /* 1. Force the dark overlay container to center everything */
+    #priceModal {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 16px !important; /* Creates breathing room around the edges of the phone */
         box-sizing: border-box !important;
     }
     
-    /* 2. Style the inner white modal box */
-    #priceModal > div, #productModal > div {
-        width: 100% !important;
-        max-height: 85vh !important; 
-        border-radius: 16px !important; 
-        padding: 24px 16px !important; 
-        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2) !important;
-        overflow-y: auto !important; 
-        margin: auto !important;
+    /* 2. Transform the inner white box into a floating card */
+    #priceModal > div {
+        width: 92% !important;           /* Prevents it from touching the left/right screen edges */
+        max-width: 450px !important;     /* Keeps it looking like a compact card, not a full page */
+        max-height: 85vh !important;     /* Keeps it inside the screen bounds vertically */
+        border-radius: 16px !important;  /* Smooth, modern curved corners */
+        padding: 20px 16px !important;   /* Clean internal spacing */
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important; /* Deep shadow for a floating effect */
+        overflow-y: auto !important;     /* Smooth scrolling inside the card */
         box-sizing: border-box !important;
+        margin: auto !important;
     }
 
-    /* 3. Fix the Header text overlapping the Close button */
+    /* 3. Fix the Header text so it leaves room for the Close button */
     #modalTitle {
-        font-size: 22px !important;
-        padding-right: 45px !important; 
+        font-size: 20px !important;
+        padding-right: 40px !important; 
         line-height: 1.2 !important;
         margin-bottom: 8px !important;
     }
 
-    /* 4. Hide the static desktop headers */
+    /* 4. Hide desktop table headers */
     .modal-header-row { display: none !important; }
     
-    /* 5. Polish the Individual Size Cards */
+    /* 5. Clean up individual size cards */
     .responsive-row {
         flex-direction: column !important;
         background: #ffffff !important;
-        margin-top: 15px !important; 
-        margin-bottom: 15px !important;
+        margin-top: 12px !important; 
+        margin-bottom: 12px !important;
         border: 1px solid #cbd5e1 !important; 
-        border-radius: 12px !important;
+        border-radius: 10px !important;
         padding: 0 !important; 
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
         overflow: hidden !important; 
     }
     
-    /* 6. Arrange the rows inside the cards perfectly */
+    /* 6. Arrange rows cleanly */
     .responsive-cell {
         width: 100% !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        padding: 12px 16px !important;
+        padding: 10px 14px !important;
         text-align: right !important;
         border-bottom: 1px solid #f1f5f9 !important;
         box-sizing: border-box !important;
@@ -303,14 +307,13 @@
         background: #f8fafc !important; 
     } 
     
-    /* Auto-generates the crisp labels on the left */
+    /* Generate crisp mobile labels on the left */
     .responsive-cell::before {
         content: attr(data-label);
         font-size: 11px;
-        font-weight: 900;
+        font-weight: 800;
         color: #64748b;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
 }
     </style>
