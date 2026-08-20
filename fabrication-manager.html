@@ -828,20 +828,28 @@ function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
     row.cells[0].innerHTML = `<input type="text" id="edit-brand-${rowId}" value="${cleanBrand}" style="${textStyle}">`;
     row.cells[1].innerHTML = `<input type="text" id="edit-size-${rowId}" value="${cleanSize}" style="${textStyle}">`;
     
-    // NEW: Purchase Price Input
+    // NEW: Purchase Price Input (With Smart Erase)
     row.cells[2].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#0284c7;">
-            ₹ <input type="number" id="edit-purchase-${rowId}" value="${oldPur}" style="${priceStyle}; border-color:#0284c7;">
+            ₹ <input type="number" id="edit-purchase-${rowId}" value="${oldPur}" style="${priceStyle}; border-color:#0284c7;" 
+                     onfocus="if(this.value==='0'){this.value='';}else{this.select();}" 
+                     onblur="if(this.value==='') this.value='0';">
         </div>`;
     
+    // MRP Input (With Smart Erase)
     row.cells[3].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#b38728;">
-            ₹ <input type="number" id="edit-mrp-${rowId}" value="${oldMrp}" style="${priceStyle}">
+            ₹ <input type="number" id="edit-mrp-${rowId}" value="${oldMrp}" style="${priceStyle}" 
+                     onfocus="if(this.value==='0'){this.value='';}else{this.select();}" 
+                     onblur="if(this.value==='') this.value='0';">
         </div>`;
     
+    // Rate Input (With Smart Erase)
     row.cells[4].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#27ae60;">
-            ₹ <input type="number" id="edit-rate-${rowId}" value="${oldRate}" style="${priceStyle}">
+            ₹ <input type="number" id="edit-rate-${rowId}" value="${oldRate}" style="${priceStyle}" 
+                     onfocus="if(this.value==='0'){this.value='';}else{this.select();}" 
+                     onblur="if(this.value==='') this.value='0';">
         </div>`;
     
    // Actions are now Cell 5
