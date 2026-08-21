@@ -828,7 +828,7 @@ function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
     row.cells[0].innerHTML = `<input type="text" id="edit-brand-${rowId}" value="${cleanBrand}" style="${textStyle}">`;
     row.cells[1].innerHTML = `<input type="text" id="edit-size-${rowId}" value="${cleanSize}" style="${textStyle}">`;
     
-    // NEW: Purchase Price Input (With Smart Erase)
+    // Purchase Price Input (With Smart Erase)
     row.cells[2].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#0284c7;">
             ₹ <input type="number" id="edit-purchase-${rowId}" value="${oldPur}" style="${priceStyle}; border-color:#0284c7;" 
@@ -844,15 +844,16 @@ function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
                      onblur="if(this.value==='') this.value='0';">
         </div>`;
     
-    // Rate Input (With Smart Erase)
+    // Rate Input (With Smart Erase AND Auto-MRP Calculator)
     row.cells[4].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#27ae60;">
             ₹ <input type="number" id="edit-rate-${rowId}" value="${oldRate}" style="${priceStyle}" 
                      onfocus="if(this.value==='0'){this.value='';}else{this.select();}" 
-                     onblur="if(this.value==='') this.value='0';">
+                     onblur="if(this.value==='') this.value='0';"
+                     oninput="let r = parseFloat(this.value) || 0; document.getElementById('edit-mrp-${rowId}').value = Math.round(r * 1.45);">
         </div>`;
     
-   // Actions are now Cell 5
+   // Actions
     row.cells[5].innerHTML = `
         <div style="display: flex; gap: 6px; justify-content: flex-end;">
             <button type="button" onclick="saveInLine('${rowId}', '${encB}', '${encN}', '${encS}')" 
