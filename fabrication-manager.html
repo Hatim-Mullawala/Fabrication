@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fabricataion Manager - Hatimi Hardware</title>
+    <title>Fabrication Manager - Hatimi Hardware</title>
     <style>
         :root { --primary-gold: #b38728; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
@@ -64,7 +64,7 @@
         .delete-row-icon { color: #e74c3c; }
 
         .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9998; }
-        #addProductModal { display: none; position: fixed; z-index: 9999; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 440px; background: #ffffff; padding: 30px; border-radius: 16px; }
+        #addProductModal { display: none; position: fixed; z-index: 9999; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 440px; background: #ffffff; padding: 30px; border-radius: 16px; max-height: 90vh; overflow-y: auto; }
         .input-group { margin-bottom: 16px; }
         .input-group label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 6px; }
         .input-group input, .input-group select { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; box-sizing: border-box; }
@@ -113,188 +113,40 @@
             .modal-table th:nth-child(4), .modal-table td:nth-child(4) { width: 20%; text-align: right; }
             .modal-table input[type="text"], .modal-table input[type="number"] { width: 100% !important; font-size: 11px !important; padding: 4px !important; box-sizing: border-box; }
         }
-        .icon-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%; /* Makes them circular */
-    border: 1px solid #e2e8f0; /* Light gray border */
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    transition: 0.3s;
-}
-.icon-btn:hover {
-    box-shadow: 0 4px 10px rgba(179,135,40,0.2);
-    border-color: #b38728;
-}   
-/* Professional Input Styling */
-#modalTableBody input {
-    width: 90%;
-    padding: 8px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1e293b;
-    background-color: #f8fafc;
-    transition: all 0.2s ease;
-}
+        
+        .icon-btn { width: 50px; height: 50px; border-radius: 50%; border: 1px solid #e2e8f0; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.3s; }
+        .icon-btn:hover { box-shadow: 0 4px 10px rgba(179,135,40,0.2); border-color: #b38728; }   
+        
+        /* Professional Input Styling */
+        #modalTableBody input { width: 90%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; font-weight: 600; color: #1e293b; background-color: #f8fafc; transition: all 0.2s ease; }
+        #modalTableBody input:focus { outline: none; border-color: #b38728; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(179, 135, 40, 0.1); }
 
-#modalTableBody input:focus {
-    outline: none;
-    border-color: #b38728; /* Gold accent */
-    background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(179, 135, 40, 0.1);
-}
+        #priceModal thead tr { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr; }
+        .price-modal-table { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr; align-items: center; width: 100%; }
+        #priceModal td, #priceModal th { width: 20%; text-align: center; overflow: hidden; }
+        #modalTableBody tr, #priceModal thead tr { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; align-items: center; }
+        
+        /* CUSTOM AUTOCOMPLETE DROPDOWN STYLES */
+        .custom-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); max-height: 220px; overflow-y: auto; z-index: 9999; display: none; }
+        .autocomplete-item { padding: 12px 16px; cursor: pointer; font-size: 14px; color: #475569; border-bottom: 1px solid #f8fafc; transition: all 0.2s ease; }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item:hover { background-color: #f8fafc; color: #b38728; font-weight: 600; padding-left: 20px; }
+        .autocomplete-item strong { color: #1e293b; font-weight: 800; }
 
-#priceModal thead tr {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
-}
-/* Apply this to both the Header and the Rows */
-.price-modal-table {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr; /* 1.5fr for Brand, 1fr for others */
-    align-items: center;
-    width: 100%;
-}
-#priceModal td, #priceModal th {
-    width: 20%; /* Distributes 100% equally across 5 columns */
-    text-align: center;
-    overflow: hidden;
-}
-/* Add this to force alignment */
-#modalTableBody tr, #priceModal thead tr {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr; /* Brand gets more space */
-    align-items: center;
-}
-/* CUSTOM AUTOCOMPLETE DROPDOWN STYLES */
-.custom-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    max-height: 220px;
-    overflow-y: auto;
-    z-index: 9999;
-    display: none; /* Hidden by default */
-}
-
-/* Individual list items */
-.autocomplete-item {
-    padding: 12px 16px;
-    cursor: pointer;
-    font-size: 14px;
-    color: #475569;
-    border-bottom: 1px solid #f8fafc;
-    transition: all 0.2s ease;
-}
-
-.autocomplete-item:last-child {
-    border-bottom: none;
-}
-
-/* Premium Hover Effect */
-.autocomplete-item:hover {
-    background-color: #f8fafc;
-    color: #b38728; /* Your gold accent color */
-    font-weight: 600;
-    padding-left: 20px; /* Slight indent animation */
-}
-
-/* Bolding the matching text */
-.autocomplete-item strong {
-    color: #1e293b;
-    font-weight: 800;
-}
-/* --- PREMIUM MOBILE RESPONSIVE MODAL --- */
-@media (max-width: 768px) {
-    /* 1. Force the overlay to act as a padded container */
-    #priceModal {
-        padding: 20px !important; /* Prevents the white box from touching phone edges */
-        align-items: center !important; /* Centers the modal vertically */
-        box-sizing: border-box !important;
-    }
-    
-    /* 2. Style the inner white modal box */
-    #priceModal > div {
-        width: 100% !important;
-        max-height: 85vh !important; /* Keeps it perfectly floating on screen */
-        border-radius: 16px !important; /* Modern, smooth rounded corners */
-        padding: 24px 16px !important; /* FIX: Stops text from cutting off on the left */
-        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2) !important;
-        overflow-y: auto !important; /* Smooth internal scrolling */
-        margin: auto !important;
-        box-sizing: border-box !important;
-    }
-
-    /* 3. Fix the Header text overlapping the Close button */
-    #modalTitle {
-        font-size: 22px !important;
-        padding-right: 45px !important; /* Leaves room for the 'X' button */
-        line-height: 1.2 !important;
-        margin-bottom: 8px !important;
-    }
-
-    /* 4. Hide the static desktop headers */
-    .modal-header-row { display: none !important; }
-    
-    /* 5. Polish the Individual Size Cards */
-    .responsive-row {
-        flex-direction: column !important;
-        background: #ffffff !important;
-        margin-top: 15px !important; /* Clear spacing between different sizes */
-        margin-bottom: 15px !important;
-        border: 1px solid #cbd5e1 !important; /* Crisp, clean border */
-        border-radius: 12px !important;
-        padding: 0 !important; 
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
-        overflow: hidden !important; 
-    }
-    
-    /* 6. Arrange the rows inside the cards perfectly */
-    .responsive-cell {
-        width: 100% !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        padding: 12px 16px !important;
-        text-align: right !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-        box-sizing: border-box !important;
-    }
-    
-    /* Gives the bottom 'Action' row a subtle shade to separate it */
-    .responsive-cell:last-child { 
-        border-bottom: none !important; 
-        background: #f8fafc !important; 
-    } 
-    
-    /* Auto-generates the crisp labels on the left */
-    .responsive-cell::before {
-        content: attr(data-label);
-        font-size: 11px;
-        font-weight: 900;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Ensure Edit Inputs shrink nicely to fit mobile screens */
-    .responsive-cell input { max-width: 110px !important; }
-    
-    /* Align buttons to the right */
-    .action-cell { justify-content: flex-end !important; padding: 10px 16px !important; }
-    .action-cell::before { display: none !important; } 
-}
+        /* --- PREMIUM MOBILE RESPONSIVE MODAL --- */
+        @media (max-width: 768px) {
+            #priceModal { padding: 20px !important; align-items: center !important; box-sizing: border-box !important; }
+            #priceModal > div { width: 100% !important; max-height: 85vh !important; border-radius: 16px !important; padding: 24px 16px !important; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2) !important; overflow-y: auto !important; margin: auto !important; box-sizing: border-box !important; }
+            #modalTitle { font-size: 22px !important; padding-right: 45px !important; line-height: 1.2 !important; margin-bottom: 8px !important; }
+            .modal-header-row { display: none !important; }
+            .responsive-row { flex-direction: column !important; background: #ffffff !important; margin-top: 15px !important; margin-bottom: 15px !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 0 !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important; overflow: hidden !important; }
+            .responsive-cell { width: 100% !important; display: flex !important; justify-content: space-between !important; align-items: center !important; padding: 12px 16px !important; text-align: right !important; border-bottom: 1px solid #f1f5f9 !important; box-sizing: border-box !important; }
+            .responsive-cell:last-child { border-bottom: none !important; background: #f8fafc !important; } 
+            .responsive-cell::before { content: attr(data-label); font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+            .responsive-cell input { max-width: 110px !important; }
+            .action-cell { justify-content: flex-end !important; padding: 10px 16px !important; }
+            .action-cell::before { display: none !important; } 
+        }
     </style>
 </head>
 <body>
@@ -386,12 +238,26 @@
             <input type="text" id="newSpecs" placeholder="e.g., 6 inch, 100g, Soft Close" required>
         </div>
         
-        <div class="input-group">
-            <label>MRP Price (₹)</label>
-            <input type="number" id="newMrp" placeholder="0.00" required>
+        <!-- NEW INPUTS ADDED HERE FOR FULL PRICE CONTROL -->
+        <div style="display: flex; gap: 10px;">
+            <div class="input-group" style="flex: 1;">
+                <label>Purchase Price</label>
+                <input type="number" id="newPurchase" placeholder="0.00" style="border-color: #0284c7;">
+            </div>
+            
+            <div class="input-group" style="flex: 1;">
+                <label>Selling Rate</label>
+                <!-- This triggers the Auto Calculator for MRP! -->
+                <input type="number" id="newRate" placeholder="0.00" required style="border-color: #27ae60;"
+                       oninput="let r = parseFloat(this.value) || 0; document.getElementById('newMrp').value = Math.round(r * 1.45);">
+            </div>
         </div>
 
-        <!-- MOVED INSIDE THE FORM AND UPGRADED -->
+        <div class="input-group">
+            <label>MRP Price (Auto-Calculated +45%)</label>
+            <input type="number" id="newMrp" placeholder="0.00" required style="border-color: #b38728; background: #fffbeb;">
+        </div>
+
         <div style="margin: 10px 0;">
             <label style="display: block; font-size: 14px; color: #475569; margin-bottom: 5px;">Product Image (Camera or Gallery)</label>
             <input type="file" id="new-product-file" accept="image/*" onchange="previewImage(event)" style="width:100%; padding:10px; border: 2px dashed #b38728; border-radius: 6px; outline: none; background: #f8fafc; cursor: pointer; color: #1e293b; font-size: 14px;">
@@ -436,21 +302,18 @@
         <button onclick="closeAllModals()" class="btn-view" style="background:#eee; color:#333; margin-top:15px;">CLOSE WINDOW</button>
     </div>
 </div>
+
 <div id="customAlertOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
     <div style="background: white; width: 90%; max-width: 400px; border-radius: 12px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); text-align: center; border-top: 5px solid #b38728;">
-        
         <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
-        
         <h3 style="margin: 0 0 10px 0; color: #1e293b; font-family: sans-serif; font-size: 20px;">Product Already Exists</h3>
-        
         <p id="customAlertMessage" style="color: #475569; font-size: 15px; margin-bottom: 24px; white-space: pre-line; line-height: 1.6;"></p>
-        
         <button onclick="closeCustomAlert()" style="background: #b38728; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; transition: background 0.2s;">
             OK, Show Me
         </button>
-        
     </div>
 </div>
+
 <div id="customConfirmModal" class="confirm-modal">
     <div class="confirm-content">
         <div style="font-size: 50px; color: #e74c3c; margin-bottom: 15px;">⚠️</div>
@@ -466,11 +329,11 @@
 <script>
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqfLPTM9QCajpUToFw0B2UTKUIv-0d3P5ldQxLWKYfD98PPVf5ZEDXITZuTrdNPh8D8dDKcJxO1D4O/pub?gid=789817243&single=true&output=csv';
 // !!! GOOGLE APPS SCRIPT URL !!!
-// !!! GOOGLE APPS SCRIPT URL !!!
 const webAppUrl = 'https://script.google.com/macros/s/AKfycbzk677GV1qdrv-TxSO46kWUheQIrFfutXKALt8M_sRxLDVRRdCIWRCiRNwsVlxwS0fq/exec';
 
 let allProducts = [], uniqueBrands = [], uniqueNames = [];
 let deleteTimeout = null, lastDeletedData = null;
+let activeCategoryDropdown = null;
 
 function loadManagerData() {
     const container = document.getElementById('catalog-container');
@@ -497,7 +360,6 @@ function handleGoogleResponse(response) {
             brand: String(entry['brand'] || "").trim(),
             name: String(entry['product name'] || "").trim(),
             specs: String(entry['specifications'] || "").trim(),
-            // --- NEW: GRAB PURCHASE PRICE FROM JSON ---
             purchasePrice: String(entry['purchase price'] || entry['Purchase Price'] || entry['purchaseprice'] || "").trim() || "0",
             mrp: String(entry['mrp'] || entry['MRP'] || entry['Mrp'] || entry['mrp '] || entry['MRP '] || "").trim() || "0",
             sellingrate: String(entry['selling rate'] || entry['Selling Rate'] || entry['sellingrate'] || "").trim() || "0",
@@ -507,9 +369,7 @@ function handleGoogleResponse(response) {
         };
     });
     
-    // --- THE NEW SORTING FIX ---
     allProducts.sort((a, b) => String(a.brand).localeCompare(String(b.brand)));
-    // ---------------------------
 
     populateCats(allProducts);
     
@@ -520,26 +380,21 @@ function handleGoogleResponse(response) {
     renderManagerCatalog(allProducts); 
     document.getElementById('syncStatus').innerHTML = `🟢 Live Database Sync: <b>${new Date().toLocaleString()}</b>`;
 
-    // 🌟 BRAND NEW AUTO-SUGGESTION TRIGGER 🌟
     updateSuggestions();
 }
+
 // --- 1. THE AUTOCOMPLETE ENGINE ---
 function setupCustomAutocomplete(inputId, dropdownId, dataList) {
     const input = document.getElementById(inputId);
     const dropdown = document.getElementById(dropdownId);
     if (!input || !dropdown) return;
 
-    // Listen to the user typing
     input.addEventListener('input', function() {
         const val = this.value.toLowerCase().trim();
-        dropdown.innerHTML = ''; // Clear old suggestions
+        dropdown.innerHTML = ''; 
 
-        if (!val) {
-            dropdown.style.display = 'none';
-            return;
-        }
+        if (!val) { dropdown.style.display = 'none'; return; }
 
-        // Find matches in your data
         const matches = dataList.filter(item => item.toLowerCase().includes(val));
 
         if (matches.length > 0) {
@@ -547,11 +402,9 @@ function setupCustomAutocomplete(inputId, dropdownId, dataList) {
                 const div = document.createElement('div');
                 div.className = 'autocomplete-item';
                 
-                // Highlight the matching letters (e.g. if you type "he", it bolds "he" in "Hettich")
                 const regex = new RegExp(`(${val})`, "gi");
                 div.innerHTML = match.replace(regex, "<strong>$1</strong>");
 
-                // When they click a suggestion
                 div.onclick = function() {
                     input.value = match;
                     dropdown.style.display = 'none';
@@ -564,26 +417,20 @@ function setupCustomAutocomplete(inputId, dropdownId, dataList) {
         }
     });
 
-    // Close the dropdown if the user clicks anywhere else on the screen
     document.addEventListener('click', function(e) {
-        if (e.target !== input && e.target !== dropdown) {
-            dropdown.style.display = 'none';
-        }
+        if (e.target !== input && e.target !== dropdown) { dropdown.style.display = 'none'; }
     });
 }
 
 // --- 2. FEEDING YOUR DATA TO THE ENGINE ---
 function updateSuggestions() {
-    // Get unique brands and names, ignoring blanks, and sort them alphabetically A-Z
     const uniqueBrands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))].sort();
     const uniqueNames = [...new Set(allProducts.map(p => p.name).filter(Boolean))].sort();
 
-    // Attach them to your new inputs
     setupCustomAutocomplete('newBrand', 'brand-dropdown', uniqueBrands);
     setupCustomAutocomplete('newName', 'name-dropdown', uniqueNames);
 }
 
-// THE NEW FILTER SYSTEM FOR AUTO-GENERATED TABS
 function filterCategoryCards(filterType, btn) {
     const filterContainer = btn.parentElement;
     filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -596,24 +443,22 @@ function filterCategoryCards(filterType, btn) {
         const searchText = card.getAttribute('data-search') || "";
         if (filterType === 'All' || searchText.includes(filterType.toLowerCase())) {
             card.style.display = 'flex';
-        } else {
-            card.style.display = 'none';
-        }
+        } else { card.style.display = 'none'; }
     });
 }
+
 function toggleClearBtn(input) {
     const btn = input.parentElement.querySelector('.clear-search');
     btn.style.display = input.value ? 'flex' : 'none';
 }
+
 function clearSearch() {
     const input = document.getElementById('inventory-search');
-    input.value = '';
-    input.focus();
-    toggleClearBtn(input);
+    input.value = ''; input.focus(); toggleClearBtn(input);
     renderManagerCatalog(allProducts);
 }
+
 async function renderManagerCatalog(products) {
-    // Add this line inside renderManagerCatalog at the very top:
     console.log("First product imgUrl:", products[0]?.imgUrl);
     const container = document.getElementById('catalog-container');
     if (!container) return;
@@ -640,30 +485,20 @@ async function renderManagerCatalog(products) {
             const bClean = String(p.brand).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
             const cClean = String(p.cat).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
 
-            // --- THE BULLETPROOF IMAGE SEARCH ---
             const paths = [];
-            
-            // 1. Search every single column for a link (Ignores headers completely!)
             let foundLink = null;
             for (const key in p) {
                 const val = String(p[key]).trim();
-                // If the cell contains a Google web link, grab it!
                 if (val.startsWith("http") && (val.includes("google") || val.includes("drive"))) {
-                    foundLink = val;
-                    break;
+                    foundLink = val; break;
                 }
             }
-            
-            if (foundLink) {
-                paths.push(foundLink);
-            }
+            if (foundLink) paths.push(foundLink);
 
-            // 2. Fallbacks: Look in your local folder if no Drive link exists
             paths.push(`fabrication-img/${bClean}-${nClean}.jpg`);
             paths.push(`fabrication-img/${nClean}.jpg`);           
             paths.push(`fabrication-img/${bClean}.jpg`);           
             paths.push(`fabrication-img/${cClean}.jpg`);           
-            // -----------------------------------------------------------------
 
             const imgId = `img-${Math.random().toString(36).substr(2, 5)}`;
             const encN = encodeURIComponent(p.name);
@@ -679,11 +514,9 @@ async function renderManagerCatalog(products) {
                     <img id="${imgId}" src="https://placehold.co/150x150/f8fafc/b38728?text=Loading...">
                 </div>
                 
-               <!-- NEW REMOVE PHOTO BUTTON -->
-<div style="text-align: center; margin-top: -5px; margin-bottom: 5px;">
-    <span onclick="removeProductImage('${encP}', '${encN}', '${imgId}')" style="font-size: 10px; color: #dc3545; cursor: pointer; text-decoration: underline; font-weight: bold;">Remove Photo</span>
-</div>
-                <!-- ----------------------- -->
+                <div style="text-align: center; margin-top: -5px; margin-bottom: 5px;">
+                    <span onclick="removeProductImage('${encP}', '${encN}', '${imgId}')" style="font-size: 10px; color: #dc3545; cursor: pointer; text-decoration: underline; font-weight: bold;">Remove Photo</span>
+                </div>
 
                 <div class="card-info">
                     <div class="brand-tag">${p.brand}</div>
@@ -698,23 +531,25 @@ async function renderManagerCatalog(products) {
     }
     container.innerHTML = html !== "" ? html + "</div></div>" : "<p>No items found.</p>";
 }
+
 function tryLoadImage(idOrElement, urls) {
     const imgElement = typeof idOrElement === 'string' ? document.getElementById(idOrElement) : idOrElement;
     if (!imgElement) return;
 
-    // Check if we have a Google Drive link (starts with http)
-    const driveUrl = urls.find(u => u.startsWith('http'));
-    
-    if (driveUrl) {
-        // If it's a Drive link, load it immediately and stop
-        imgElement.src = driveUrl;
-        imgElement.onerror = () => {
-            imgElement.src = 'https://placehold.co/150x150/f8fafc/b38728?text=Error';
-        };
+    let rawLink = urls.find(u => u.startsWith('http'));
+    if (rawLink) {
+        // Apply Google Drive auto-converter logic safely
+        if (rawLink.includes('drive.google.com')) {
+            const match1 = rawLink.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            const match2 = rawLink.match(/id=([a-zA-Z0-9_-]+)/);
+            const fileId = match1 ? match1[1] : (match2 ? match2[1] : null);
+            if (fileId) rawLink = `https://drive.google.com/uc?export=view&id=${fileId}`;
+        }
+        imgElement.src = rawLink;
+        imgElement.onerror = () => { imgElement.src = 'https://placehold.co/150x150/f8fafc/b38728?text=Error'; };
         return;
     }
 
-    // If no Drive link, proceed with your existing local file logic
     let expandedUrls = [];
     urls.forEach(u => {
         expandedUrls.push(u);
@@ -726,7 +561,6 @@ function tryLoadImage(idOrElement, urls) {
     function attemptLoad() {
         if (index < expandedUrls.length) {
             const imgTester = new Image();
-            // Important: Use expandedUrls[index] instead of index-1
             imgTester.onload = () => { imgElement.src = expandedUrls[index - 1]; };
             imgTester.onerror = attemptLoad;
             imgTester.src = expandedUrls[index++];
@@ -736,6 +570,7 @@ function tryLoadImage(idOrElement, urls) {
     }
     attemptLoad();
 }
+
 function openModal(encN, encC, encP, isAutoHinge) {
     const name = decodeURIComponent(encN);
     const cat = decodeURIComponent(encC);
@@ -756,7 +591,6 @@ function openModal(encN, encC, encP, isAutoHinge) {
     variants.forEach((v, idx) => {
         const specs = String(v.specs || "").split(/[,，\n|]+/);
         
-        // FIX: If no specs exist, create one "empty" entry so the row shows up!
         if (specs.length === 0 || (specs.length === 1 && !specs[0].trim())) {
             collectedSizes.push({ brand: v.brand, pName: v.name, cleanS: "", v: v, matchedMRP: v.mrp || "0", rowId: `row-${idx}-empty` });
         } else {
@@ -769,7 +603,6 @@ function openModal(encN, encC, encP, isAutoHinge) {
         }
     });
 
-    // Simple sorting by size
     collectedSizes.sort((a, b) => a.cleanS.localeCompare(b.cleanS, undefined, { numeric: true }));
 
    collectedSizes.forEach(item => {
@@ -811,11 +644,10 @@ function openModal(encN, encC, encP, isAutoHinge) {
         </tr>`;
     });
     
-    // Create a fake history state so the mobile back button works!
     window.history.pushState({ modal: 'priceModal' }, "", "#edit");
-    
     document.getElementById('priceModal').style.display = "flex";
 }
+
 function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
     const row = document.getElementById(rowId);
     
@@ -828,7 +660,6 @@ function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
     row.cells[0].innerHTML = `<input type="text" id="edit-brand-${rowId}" value="${cleanBrand}" style="${textStyle}">`;
     row.cells[1].innerHTML = `<input type="text" id="edit-size-${rowId}" value="${cleanSize}" style="${textStyle}">`;
     
-    // Purchase Price Input (With Smart Erase)
     row.cells[2].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#0284c7;">
             ₹ <input type="number" id="edit-purchase-${rowId}" value="${oldPur}" style="${priceStyle}; border-color:#0284c7;" 
@@ -836,7 +667,6 @@ function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
                      onblur="if(this.value==='') this.value='0';">
         </div>`;
     
-    // MRP Input (With Smart Erase)
     row.cells[3].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#b38728;">
             ₹ <input type="number" id="edit-mrp-${rowId}" value="${oldMrp}" style="${priceStyle}" 
@@ -844,7 +674,6 @@ function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
                      onblur="if(this.value==='') this.value='0';">
         </div>`;
     
-    // Rate Input (With Smart Erase AND Auto-MRP Calculator)
     row.cells[4].innerHTML = `
         <div style="display:flex; align-items:center; gap:4px; font-weight:bold; color:#27ae60;">
             ₹ <input type="number" id="edit-rate-${rowId}" value="${oldRate}" style="${priceStyle}" 
@@ -853,7 +682,6 @@ function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
                      oninput="let r = parseFloat(this.value) || 0; document.getElementById('edit-mrp-${rowId}').value = Math.round(r * 1.45);">
         </div>`;
     
-   // Actions
     row.cells[5].innerHTML = `
         <div style="display: flex; gap: 6px; justify-content: flex-end;">
             <button type="button" onclick="saveInLine('${rowId}', '${encB}', '${encN}', '${encS}')" 
@@ -862,16 +690,17 @@ function makeEditable(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
                     style="background:#94a3b8; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; font-size:11px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">X</button>
         </div>`;
 }
+
 async function saveInLine(rowId, encB, encN, encS) {
     const row = document.getElementById(rowId);
-    const actionCell = row.cells[5]; // UPDATED TO INDEX 5
+    const actionCell = row.cells[5]; 
 
     actionCell.innerHTML = `<span style="color:#b38728; font-weight:bold; font-size:11px;">SYNCING...</span>`;
 
     try {
         const newBrand = document.getElementById(`edit-brand-${rowId}`).value;
         const newSize = document.getElementById(`edit-size-${rowId}`).value;
-        const newPurchase = document.getElementById(`edit-purchase-${rowId}`).value; // GRABBING THE VALUE
+        const newPurchase = document.getElementById(`edit-purchase-${rowId}`).value; 
         const newMrp = document.getElementById(`edit-mrp-${rowId}`).value;
         const newRate = document.getElementById(`edit-rate-${rowId}`).value;
 
@@ -890,7 +719,7 @@ async function saveInLine(rowId, encB, encN, encS) {
                 oldSize: oldSize, 
                 newBrand: newBrand,
                 newSize: newSize, 
-                newPurchase: newPurchase, // SEND TO GOOGLE
+                newPurchase: newPurchase, 
                 newPrice: newMrp, 
                 newRate: newRate
             })
@@ -899,9 +728,9 @@ async function saveInLine(rowId, encB, encN, encS) {
         setTimeout(() => {
             row.cells[0].innerHTML = newBrand;
             row.cells[1].innerHTML = newSize;
-            row.cells[2].innerHTML = `₹${newPurchase}`; // RESTORE PURCHASE CELL
-            row.cells[3].innerHTML = `₹${newMrp}`;      // SHIFTED MRP
-            row.cells[4].innerHTML = `₹${newRate}`;     // SHIFTED RATE
+            row.cells[2].innerHTML = `₹${newPurchase}`; 
+            row.cells[3].innerHTML = `₹${newMrp}`;      
+            row.cells[4].innerHTML = `₹${newRate}`;     
 
             const newEncB = encodeURIComponent(newBrand).replace(/'/g, "%27");
             const newEncS = encodeURIComponent(newSize).replace(/'/g, "%27");
@@ -929,7 +758,7 @@ async function saveInLine(rowId, encB, encN, encS) {
             if (productVariant) {
                  productVariant.brand = newBrand;
                  productVariant.specs = newSize;
-                 productVariant.purchasePrice = newPurchase; // UPDATE MEMORY
+                 productVariant.purchasePrice = newPurchase;
                  productVariant.mrp = newMrp;
                  productVariant.sellingrate = newRate;
             }
@@ -945,12 +774,12 @@ async function saveInLine(rowId, encB, encN, encS) {
         actionCell.innerHTML = `<span style="color:red; font-weight:bold; font-size:11px;">ERROR</span>`;
     }
 }
+
 function cancelEdit(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
     const row = document.getElementById(rowId);
-    
     row.cells[0].innerHTML = decodeURIComponent(encB);
     row.cells[1].innerHTML = decodeURIComponent(encS) || "-";
-    row.cells[2].innerHTML = `₹${oldPur}`; // RESTORE PURCHASE
+    row.cells[2].innerHTML = `₹${oldPur}`;
     row.cells[3].innerHTML = `₹${oldMrp}`;
     row.cells[4].innerHTML = `₹${oldRate}`;
     
@@ -966,6 +795,7 @@ function cancelEdit(rowId, encB, encN, encS, oldPur, oldMrp, oldRate) {
             </span>
         </div>`;
 }
+
 function showUndoToast(message, actionData) {
     if (deleteTimeout) executeFinalDelete();
     lastDeletedData = actionData;
@@ -1029,7 +859,7 @@ async function executeFinalDelete() {
    fetch(webAppUrl, { 
         method: 'POST', 
         mode: 'no-cors', 
-        headers: { "Content-Type": "text/plain" }, // <-- ADDED THIS
+        headers: { "Content-Type": "text/plain" }, 
         body: JSON.stringify(payload) 
     });
     showToast("Deleted from Database", "success");
@@ -1046,14 +876,13 @@ async function deleteRowSafe(encB, encN, encS, rowId) {
             mode: "no-cors",
             headers: { "Content-Type": "text/plain" },
             body: JSON.stringify({
-                action: "deleteRow", // This MUST match the action in your Apps Script
+                action: "deleteRow",
                 brand: decodeURIComponent(encB),
                 name: decodeURIComponent(encN),
                 size: decodeURIComponent(encS)
             })
         });
 
-        // If successful, remove the row visually without refreshing
         const row = document.getElementById(rowId);
         if (row) row.remove();
         
@@ -1080,7 +909,6 @@ function deleteProductGroup(encN, encC, encP, isAutoHinge, cardId) {
     });
 }
 
-// UTILITIES
 function showToast(message, type = 'success') {
     let toast = document.getElementById("pro-toast");
     if (!toast) {
@@ -1105,14 +933,53 @@ function askBeforeDelete(title, text, action) {
 
 function closeConfirm() { document.getElementById('customConfirmModal').style.display = 'none'; }
 
+// --- CUSTOM CATEGORY POPUP LOGIC ---
 function populateCats(products) {
     const catSelect = document.getElementById('newCat'); 
     if (!catSelect) return;
+    
     const categories = [...new Set(products.map(p => p.cat))].filter(c => c).sort();
-    catSelect.innerHTML = '<option value="">Select Category</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('') + '<option value="ADD_NEW" style="color:#d4af37; font-weight:bold;">+ Add New Category</option>';
+    
+    catSelect.innerHTML = '<option value="">Select Category</option>' + 
+                          categories.map(c => `<option value="${c}">${c}</option>`).join('') + 
+                          '<option value="ADD_NEW" style="color:#b38728; font-weight:bold;">+ Add New Category</option>';
+    
     catSelect.onchange = function() {
-        if (this.value === "ADD_NEW") { const nCat = prompt("New Category Name:"); if (nCat) { const opt = document.createElement('option'); opt.value = nCat; opt.text = nCat; this.add(opt, this.options[this.length - 1]); this.value = nCat; } else this.value = ""; }
+        if (this.value === "ADD_NEW") { 
+            activeCategoryDropdown = this;
+            const modal = document.getElementById('customCategoryModal');
+            const input = document.getElementById('newCategoryInput');
+            
+            modal.style.display = 'flex';
+            input.value = '';
+            setTimeout(() => input.focus(), 100);
+        }
     };
+}
+
+function closeCategoryModal() {
+    document.getElementById('customCategoryModal').style.display = 'none';
+    if (activeCategoryDropdown) {
+        activeCategoryDropdown.selectedIndex = 0; 
+    }
+}
+
+function confirmNewCategory() {
+    const inputField = document.getElementById('newCategoryInput');
+    const newCatName = inputField.value.trim();
+
+    if (newCatName !== "" && activeCategoryDropdown) {
+        const newOption = document.createElement("option");
+        newOption.text = newCatName;
+        newOption.value = newCatName;
+        
+        const lastIndex = activeCategoryDropdown.options.length - 1;
+        activeCategoryDropdown.add(newOption, activeCategoryDropdown.options[lastIndex]);
+        activeCategoryDropdown.value = newCatName;
+    } else if (activeCategoryDropdown) {
+        activeCategoryDropdown.selectedIndex = 0;
+    }
+    document.getElementById('customCategoryModal').style.display = 'none';
 }
 
 function populateSuggestions(products) {
@@ -1144,17 +1011,20 @@ function showSuggestions(input, type) {
 document.addEventListener('click', e => { 
     if (!e.target.matches('input')) document.querySelectorAll('.suggestion-container').forEach(c => c.style.display = "none"); 
 });
+
 async function handleAddProduct(event) {
     event.preventDefault(); 
     
-    // --- 1. GRAB VALUES EARLY FOR DUPLICATE CHECK ---
     const targetCat = document.getElementById('newCat').value.trim();
     const targetBrand = (document.getElementById('newBrand').value || "N/A").trim();
     const targetName = document.getElementById('newName').value.trim();
     const targetSpecs = document.getElementById('newSpecs').value.trim();
-    const targetMrp = document.getElementById('newMrp').value.trim();
+    
+    // CAPTURE ALL PRICING
+    const targetPurchase = document.getElementById('newPurchase').value.trim() || "0";
+    const targetRate = document.getElementById('newRate').value.trim() || "0";
+    const targetMrp = document.getElementById('newMrp').value.trim() || "0";
 
-    // --- 2. THE DUPLICATE CHECKER ---
     const duplicate = allProducts.find(p => 
         String(p.brand).trim().toLowerCase() === targetBrand.toLowerCase() &&
         String(p.name).trim().toLowerCase() === targetName.toLowerCase() &&
@@ -1179,9 +1049,7 @@ async function handleAddProduct(event) {
         });
         return; 
     }
-    // --------------------------------
 
-    // --- 3. PROCEED WITH SAVING IF NO DUPLICATE ---
     const btn = document.getElementById('submitBtn'); 
     btn.innerText = "SAVING..."; btn.disabled = true;
 
@@ -1189,7 +1057,6 @@ async function handleAddProduct(event) {
         const fileInput = document.getElementById('new-product-file'); 
         let fileData = "", mimeType = "", filename = "";
         
-        // --- THE SMART COMPRESSOR ENGINE ---
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0]; 
             
@@ -1199,44 +1066,33 @@ async function handleAddProduct(event) {
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800; // Shrink to web-friendly width
+                        const MAX_WIDTH = 800; 
                         const MAX_HEIGHT = 800;
                         let width = img.width;
                         let height = img.height;
 
-                        // Calculate new compressed dimensions
                         if (width > height) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                         } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
-                            }
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
                         }
                         
-                        // Draw image on canvas at new size
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // Export as lightweight JPEG at 70% quality
                         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        resolve(compressedDataUrl.split(',')[1]); // Extract base64
+                        resolve(compressedDataUrl.split(',')[1]); 
                     };
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(file); 
             });
             
-            // Override with standard web formats since we compressed it
             mimeType = "image/jpeg"; 
             filename = targetName.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".jpg";
         }
-        // -----------------------------------
         
         const payload = { 
             action: fileData ? "addWithImage" : "add", 
@@ -1244,7 +1100,9 @@ async function handleAddProduct(event) {
             brand: targetBrand, 
             name: targetName, 
             specs: targetSpecs, 
+            purchasePrice: targetPurchase, 
             mrp: targetMrp,
+            sellingRate: targetRate, 
             fileData: fileData, 
             mimeType: mimeType, 
             filename: filename 
@@ -1266,27 +1124,21 @@ async function handleAddProduct(event) {
         btn.innerText = "Add to Inventory"; btn.disabled = false; 
     }
 }
+
 function showCustomAlert(message, callback) {
-    // Insert the text
     document.getElementById('customAlertMessage').innerText = message;
-    
-    // Show the modal (using flex to center it perfectly)
     document.getElementById('customAlertOverlay').style.display = 'flex';
-    
-    // Save the follow-up action
     customAlertCallback = callback;
 }
 
 function closeCustomAlert() {
-    // Hide the modal
     document.getElementById('customAlertOverlay').style.display = 'none';
-    
-    // If we passed a function (like searching for the product), run it now!
     if (customAlertCallback) {
         customAlertCallback();
-        customAlertCallback = null; // Clear it out
+        customAlertCallback = null; 
     }
 }
+
 async function uploadPhotoFromMobile() {
     const fileInput = document.getElementById('mobile-upload');
     const statusText = document.getElementById('upload-status');
@@ -1318,7 +1170,7 @@ async function uploadPhotoFromMobile() {
                 })
             });
 
-            const result = await response.json(); // Wait for the server to talk back
+            const result = await response.json(); 
             console.log("Server response:", result);
             
             if (result.result === "success") {
@@ -1334,25 +1186,20 @@ async function uploadPhotoFromMobile() {
     };
     reader.readAsDataURL(file);
 }
+
 function logout() { sessionStorage.removeItem('managerAuth'); window.location.href = "index.html"; }
 function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
 window.onscroll = () => document.getElementById("backToTop").style.display = (window.scrollY > 300) ? "flex" : "none";
 function toggleAddModal() { const m = document.getElementById('addProductModal'), b = document.getElementById('modalBackdrop'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
+
 function closeAllModals() { 
     document.getElementById('priceModal').style.display = 'none'; 
-    
     const addModal = document.getElementById('addProductModal');
     if(addModal) addModal.style.display = 'none';
-    
     const backdrop = document.getElementById('modalBackdrop');
     if(backdrop) backdrop.style.display = 'none';
-    
     document.body.style.overflow = 'auto'; 
-    
-    // If the user clicked 'X', automatically clear the fake history step behind the scenes!
-    if(window.location.hash === "#edit") {
-        window.history.back(); 
-    }
+    if(window.location.hash === "#edit") { window.history.back(); }
 }
 
 function previewImage(event) {
@@ -1361,20 +1208,18 @@ function previewImage(event) {
     const previewImage = document.getElementById('image-preview');
     
     if (file) {
-        // Creates a temporary link to show the image on screen
         previewImage.src = URL.createObjectURL(file);
         previewContainer.style.display = 'block';
     } else {
-        // Hides the box if they cancel
         previewImage.src = '';
         previewContainer.style.display = 'none';
     }
 }
+
 async function triggerImageUpdate(encBrand, encName, imgId) {
     const brand = decodeURIComponent(encBrand);
     const name = decodeURIComponent(encName);
     
-    // 1. Create an invisible file uploader
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
@@ -1383,7 +1228,6 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
         const file = e.target.files[0];
         if (!file) return;
 
-        // 2. Visual feedback: Change the image to say "Uploading..."
         const imgElement = document.getElementById(imgId);
         const oldSrc = imgElement.src;
         imgElement.src = "https://placehold.co/150x150/f8fafc/b38728?text=Uploading...";
@@ -1391,16 +1235,14 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
         if (typeof showToast === "function") showToast("Compressing & Uploading...", "info");
 
         try {
-            let displayUrl = ""; // This will hold the image so we can show it instantly
-
-            // 3. The Smart Compressor
+            let displayUrl = ""; 
             const fileData = await new Promise((resolve) => { 
                 const reader = new FileReader();
                 reader.onload = function(evt) {
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800; // Shrink for fast loading
+                        const MAX_WIDTH = 800; 
                         const MAX_HEIGHT = 800;
                         let width = img.width;
                         let height = img.height;
@@ -1415,9 +1257,7 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // Save the full image URL for the screen
                         displayUrl = canvas.toDataURL('image/jpeg', 0.7); 
-                        // Send ONLY the raw data to Google
                         resolve(displayUrl.split(',')[1]); 
                     };
                     img.src = evt.target.result;
@@ -1425,7 +1265,6 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
                 reader.readAsDataURL(file); 
             });
 
-            // 4. Send to Google silently
             const payload = {
                 action: "updateImage",
                 brand: brand,
@@ -1443,11 +1282,8 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
             });
 
             if (typeof showToast === "function") showToast("Image updated successfully!", "success");
-            
-            // 5. THE FIX: Update the image on screen INSTANTLY without reloading!
             imgElement.src = displayUrl;
 
-            // Update the local memory so it stays there if you use the search bar
             const matchingProduct = allProducts.find(p => p.brand === brand && p.name === name);
             if (matchingProduct) {
                 matchingProduct.image = displayUrl;
@@ -1455,14 +1291,13 @@ async function triggerImageUpdate(encBrand, encName, imgId) {
             }
 
         } catch (error) {
-            imgElement.src = oldSrc; // Revert image on crash
+            imgElement.src = oldSrc; 
             if (typeof showToast === "function") showToast("Failed to upload image.", "error");
         }
     };
-    
-    // Simulate a click to open the file browser / camera
     fileInput.click();
 }
+
 function removeProductImage(encBrand, encName, imgId) {
     const brand = decodeURIComponent(encBrand);
     const name = decodeURIComponent(encName);
@@ -1473,32 +1308,21 @@ function removeProductImage(encBrand, encName, imgId) {
         async () => {
             if (typeof showToast === "function") showToast("Removing image...", "info");
 
-            // 1. Instantly change the image on screen to "Removing..."
             const imgElement = document.getElementById(imgId);
             const oldSrc = imgElement.src;
             imgElement.src = "https://placehold.co/150x150/f8fafc/b38728?text=Removing...";
 
             try {
-                const payload = {
-                    action: "removeImage",
-                    brand: brand,
-                    name: name
-                };
+                const payload = { action: "removeImage", brand: brand, name: name };
 
-                // 2. Send the delete command to Google silently
                 await fetch(webAppUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(payload)
                 });
 
                 if (typeof showToast === "function") showToast("Image removed successfully!", "success");
-
-                // 3. Change to "No Photo" placeholder WITHOUT reloading the page!
                 imgElement.src = "https://placehold.co/150x150/f8fafc/b38728?text=No+Photo";
 
-                // 4. Update the local memory so it stays removed if you search later
                 const matchingProduct = allProducts.find(p => p.brand === brand && p.name === name);
                 if (matchingProduct) {
                     matchingProduct.image = "";
@@ -1507,36 +1331,27 @@ function removeProductImage(encBrand, encName, imgId) {
 
             } catch (error) {
                 console.error(error);
-                imgElement.src = oldSrc; // Revert the image if there was a crash
+                imgElement.src = oldSrc; 
                 if (typeof showToast === "function") showToast("Failed to remove image.", "error");
             }
         }
     );
 }
+
 async function renameProduct(encBrand, encName) {
     const oldBrand = decodeURIComponent(encBrand);
     const oldName = decodeURIComponent(encName);
 
-    // Call our new professional modal instead of the native browser prompt
     const newName = await askForNewName(oldName);
-    
-    // If they cancel or leave it exactly the same, do nothing
     if (!newName || newName.trim() === "" || newName.trim() === oldName) return;
 
     if (typeof showToast === "function") showToast("Fixing spelling...", "info");
 
     try {
-        const payload = {
-            action: "renameProduct",
-            oldBrand: oldBrand,
-            oldName: oldName,
-            newName: newName.trim()
-        };
+        const payload = { action: "renameProduct", oldBrand: oldBrand, oldName: oldName, newName: newName.trim() };
 
         await fetch(webAppUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain' },
+            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify(payload)
         });
 
@@ -1550,6 +1365,7 @@ async function renameProduct(encBrand, encName) {
         if (typeof showToast === "function") showToast("Failed to rename product.", "error");
     }
 }
+
 function askForNewName(oldName) {
     return new Promise((resolve) => {
         const overlay = document.getElementById('customRenameOverlay');
@@ -1557,60 +1373,62 @@ function askForNewName(oldName) {
         const cancelBtn = document.getElementById('cancelRenameBtn');
         const confirmBtn = document.getElementById('confirmRenameBtn');
 
-        // Setup the UI
         input.value = oldName;
         overlay.style.display = 'flex';
         input.focus();
-        input.select(); // Highlights the old text so you can instantly type over it
+        input.select(); 
 
-        // Cleanup function closes modal and returns the result
         const closeAndResolve = (val) => {
             overlay.style.display = 'none';
-            // Remove listeners so they don't trigger multiple times
-            cancelBtn.onclick = null;
-            confirmBtn.onclick = null;
-            input.onkeydown = null;
+            cancelBtn.onclick = null; confirmBtn.onclick = null; input.onkeydown = null;
             resolve(val);
         };
 
-        // Button clicks
         cancelBtn.onclick = () => closeAndResolve(null);
         confirmBtn.onclick = () => closeAndResolve(input.value);
-        
-        // Let user press Enter to save or Escape to cancel
         input.onkeydown = (e) => {
             if (e.key === 'Enter') closeAndResolve(input.value);
             if (e.key === 'Escape') closeAndResolve(null);
         };
     });
 }
-// Intercept the system 'Back' button
+
 window.addEventListener("popstate", function(event) {
-    // Force all modals to close instead of leaving the app
     document.getElementById('priceModal').style.display = 'none';
-    
-    // (Also close your Add Product modal just in case that one was open)
     const addModal = document.getElementById('addProductModal');
     if(addModal) addModal.style.display = 'none';
-    
     const backdrop = document.getElementById('modalBackdrop');
     if(backdrop) backdrop.style.display = 'none';
-    
     document.body.style.overflow = 'auto';
 });
+
 loadManagerData();
 </script>
+
 <!-- CUSTOM PROFESSIONAL RENAME MODAL -->
 <div id="customRenameOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.7); z-index:10000; justify-content:center; align-items:center; backdrop-filter:blur(3px);">
     <div style="background:#ffffff; padding:24px; border-radius:12px; width:90%; max-width:400px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); font-family:sans-serif;">
         <h3 style="margin-top:0; color:#334155; font-size:18px; margin-bottom:8px;">Edit Product Name</h3>
         <p style="color:#64748b; font-size:13px; margin-bottom:20px; line-height:1.4;">Enter the correct spelling. This will instantly update all sizes for this product.</p>
-        
         <input type="text" id="customRenameInput" style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:6px; font-size:15px; margin-bottom:24px; outline:none; box-sizing:border-box; color:#1e293b; font-weight:600; transition: border-color 0.2s;" onfocus="this.style.borderColor='#b38728'" onblur="this.style.borderColor='#e2e8f0'">
-        
         <div style="display:flex; justify-content:flex-end; gap:12px;">
             <button type="button" id="cancelRenameBtn" style="padding:10px 18px; border:none; background:#f1f5f9; color:#475569; border-radius:6px; font-weight:700; font-size:13px; cursor:pointer; transition:0.2s;">CANCEL</button>
             <button type="button" id="confirmRenameBtn" style="padding:10px 18px; border:none; background:#b38728; color:#ffffff; border-radius:6px; font-weight:700; font-size:13px; cursor:pointer; transition:0.2s; box-shadow:0 4px 6px rgba(179, 135, 40, 0.2);">SAVE NAME</button>
+        </div>
+    </div>
+</div>
+
+<!-- CUSTOM ADD CATEGORY MODAL -->
+<div id="customCategoryModal" class="modal" style="display:none; align-items:center; justify-content:center; background:rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); z-index: 999999;">
+    <div class="modal-content" style="max-width: 380px; width: 90%; text-align: center; border-top: 5px solid #b38728; padding: 30px; border-radius: 16px; background: #fff; box-shadow: 0 25px 50px rgba(0,0,0,0.25); box-sizing: border-box;">
+        <h2 style="color: #1e293b; margin-top: 0; font-size: 22px; font-weight: 900;">New Category</h2>
+        <p style="color: #64748b; font-size: 13px; margin-bottom: 25px;">Enter the name of the new category you want to create.</p>
+        <input type="text" id="newCategoryInput" placeholder="e.g., Door Handles" 
+               style="width: 100%; padding: 14px 15px; border: 2px solid #e2e8f0; border-radius: 8px; margin-bottom: 25px; font-size: 15px; font-weight: 600; outline: none; box-sizing: border-box; transition: 0.3s;" 
+               onfocus="this.style.borderColor='#b38728'" onblur="this.style.borderColor='#e2e8f0'" onkeypress="if(event.key === 'Enter') confirmNewCategory()">
+        <div style="display: flex; gap: 12px; justify-content: space-between;">
+            <button onclick="closeCategoryModal()" style="flex: 1; background: #f1f5f9; color: #64748b; padding: 14px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 13px; text-transform: uppercase; transition: 0.2s;">Cancel</button>
+            <button onclick="confirmNewCategory()" style="flex: 1; background: #b38728; color: white; padding: 14px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 13px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(179, 135, 40, 0.3); transition: 0.2s;">Add Category</button>
         </div>
     </div>
 </div>
