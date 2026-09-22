@@ -1220,7 +1220,7 @@ function cosineSimilarity(vecA, vecB) {
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-// --- 2. THE TENSORFLOW CAMERA SEARCH (LOW MEMORY / SMART CROP) ---
+// --- 2. THE TENSORFLOW CAMERA SEARCH (WITH AI X-RAY VISION) ---
 async function handleCameraPartCapture(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1237,27 +1237,23 @@ async function handleCameraPartCapture(event) {
         img.src = URL.createObjectURL(file);
         await new Promise(r => img.onload = r);
 
-        // 🚨 RAM SAVER: MobileNet AI ONLY looks at 224x224 pixels. 
-        // We shrink the massive 12-Megapixel phone photo down to 224 pixels instantly 
-        // so it doesn't crash your phone's memory!
         const canvas = document.createElement('canvas');
         canvas.width = 224;
         canvas.height = 224;
         const ctx = canvas.getContext('2d');
         
-        // Smart Crop to grab the center square
         const size = Math.min(img.width, img.height);
         const startX = (img.width - size) / 2;
         const startY = (img.height - size) / 2;
         
         ctx.drawImage(img, startX, startY, size, size, 0, 0, 224, 224);
 
-        // Calculate math using the tiny square canvas
         const embeddings = model.infer(canvas, true);
         const cameraVector = Array.from(embeddings.dataSync());
-        
-        // 🚨 MEMORY LEAK FIX: Empty the AI trash from the phone's RAM!
         embeddings.dispose();
+
+        // 🚨 NEW: Grab the exact image the AI is looking at to show the user!
+        const aiVisionData = canvas.toDataURL('image/jpeg', 0.8);
 
         let bestMatch = "";
         let highestScore = -1;
@@ -1274,17 +1270,18 @@ async function handleCameraPartCapture(event) {
             }
         });
 
-        // 40% threshold for real-world lighting
         if (bestMatch !== "" && highestScore > 0.40) {
             searchInput.value = bestMatch;
             if (typeof filterProducts === "function") filterProducts();
             
             let matchPercent = Math.round(highestScore * 100);
-            if (typeof showCameraToast === "function") showCameraToast(`✅ Match Found! (${matchPercent}% confident)`);
+            // Send the image data to the toast!
+            if (typeof showCameraToast === "function") showCameraToast(`✅ Match Found! (${matchPercent}%)`, aiVisionData);
         } else {
-            if (typeof showCameraToast === "function") showCameraToast("❌ Item not recognized.");
             searchInput.value = "";
             if (typeof filterProducts === "function") filterProducts();
+            // Send the image data to the toast!
+            if (typeof showCameraToast === "function") showCameraToast("❌ Item not recognized.<br><span style='font-size:11px; color:#94a3b8;'>This is what the AI saw:</span>", aiVisionData);
         }
 
     } catch (err) {
@@ -1293,28 +1290,33 @@ async function handleCameraPartCapture(event) {
         searchInput.value = "";
     }
 }
-// --- MISSING TOAST NOTIFICATION FOR CAMERA (FIXED TIMERS) ---
-let cameraToastTimer; // This variable tracks the timer
+// --- MISSING TOAST NOTIFICATION FOR CAMERA (WITH AI VISION) ---
+let cameraToastTimer;
 
-function showCameraToast(message) {
+function showCameraToast(message, imageUrl = null) {
     let toast = document.getElementById("camera-toast");
     if (!toast) {
         toast = document.createElement("div");
         toast.id = "camera-toast";
-        toast.style.cssText = `position: fixed; top: 80px; left: 50%; transform: translateX(-50%); padding: 12px 24px; background: #1e293b; color: #b38728; border: 2px solid #b38728; border-radius: 50px; font-weight: 800; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; transition: 0.3s ease-in-out; opacity: 0; pointer-events: none;`;
+        toast.style.cssText = `position: fixed; top: 80px; left: 50%; transform: translateX(-50%); padding: 15px 24px; background: #1e293b; color: #b38728; border: 2px solid #b38728; border-radius: 20px; font-weight: 800; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 9999; transition: 0.3s ease-in-out; opacity: 0; pointer-events: none; text-align: center;`;
         document.body.appendChild(toast);
     }
     
-    toast.innerHTML = message;
+    // If we have image data, create an HTML image tag to display it!
+    let finalHtml = message;
+    if (imageUrl) {
+        finalHtml += `<br><img src="${imageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 2px solid #fff;">`;
+    }
+    
+    toast.innerHTML = finalHtml;
     toast.style.opacity = "1";
     
-    // Clear the old timer before starting a new one!
     clearTimeout(cameraToastTimer);
     
-    // Set a fresh 3.5-second timer
+    // Hold it on screen for 5 seconds so you can see if the image is sideways!
     cameraToastTimer = setTimeout(() => { 
         toast.style.opacity = "0"; 
-    }, 3500);
+    }, 5000);
 }
 // START
 loadFabricationData();
