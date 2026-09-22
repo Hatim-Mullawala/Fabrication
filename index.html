@@ -1220,7 +1220,7 @@ function cosineSimilarity(vecA, vecB) {
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-// --- 2. THE TENSORFLOW CAMERA SEARCH ---
+// --- 2. THE TENSORFLOW CAMERA SEARCH (WITH SMART CROP) ---
 async function handleCameraPartCapture(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1231,28 +1231,40 @@ async function handleCameraPartCapture(event) {
     if (typeof showCameraToast === "function") showCameraToast("Initializing Visual AI...");
 
     try {
-        // Load the AI model in the customer's browser
         const model = await mobilenet.load({version: 2, alpha: 1.0});
 
-        // Read the customer's photo
         const img = new Image();
         img.src = URL.createObjectURL(file);
         await new Promise(r => img.onload = r);
 
-        // Convert the customer's photo into a math vector
-        const embeddings = model.infer(img, true);
+        // 🚨 NEW: THE SMART CROP ALGORITHM 🚨
+        // Phone photos are rectangles. This cuts a perfect square out of the center
+        // so the hardware shapes do not get squished or distorted!
+        const canvas = document.createElement('canvas');
+        const size = Math.min(img.width, img.height); // Find the shortest side
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        // Calculate the exact center of the photo
+        const startX = (img.width - size) / 2;
+        const startY = (img.height - size) / 2;
+        
+        // Draw only the center square onto the canvas
+        ctx.drawImage(img, startX, startY, size, size, 0, 0, size, size);
+
+        // Calculate math using the perfect SQUARE canvas, not the raw photo
+        const embeddings = model.infer(canvas, true);
         const cameraVector = Array.from(embeddings.dataSync());
 
         let bestMatch = "";
         let highestScore = -1;
 
-        // Compare the camera math against every product's math in the database
         allProducts.forEach(p => {
             if (p.vector && String(p.vector).startsWith("[")) {
                 let itemVector = JSON.parse(p.vector); 
                 let score = cosineSimilarity(cameraVector, itemVector);
                 
-                // If it's a closer match than the previous one, save it!
                 if (score > highestScore) {
                     highestScore = score;
                     bestMatch = p.name;
@@ -1260,11 +1272,16 @@ async function handleCameraPartCapture(event) {
             }
         });
 
-        // Ensure the match is at least 50% accurate before showing it
-        if (bestMatch !== "" && highestScore > 0.50) {
+        // 🚨 NEW: LOWERED THRESHOLD 🚨
+        // Because a live photo will never mathematically match a catalog photo 100%, 
+        // we lowered the strictness from 0.50 to 0.40 so it allows for lighting differences.
+        if (bestMatch !== "" && highestScore > 0.40) {
             searchInput.value = bestMatch;
             if (typeof filterProducts === "function") filterProducts();
-            if (typeof showCameraToast === "function") showCameraToast(`✅ Perfect Match Found!`);
+            
+            // This will show you EXACTLY how confident the AI was!
+            let matchPercent = Math.round(highestScore * 100);
+            if (typeof showCameraToast === "function") showCameraToast(`✅ Match Found! (${matchPercent}% confident)`);
         } else {
             if (typeof showCameraToast === "function") showCameraToast("❌ Item not recognized.");
             searchInput.value = "";
