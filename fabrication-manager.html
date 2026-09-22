@@ -1493,18 +1493,41 @@ async function startVectorSync() {
         
         const nClean = String(p.name).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
         const bClean = String(p.brand).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
+        const cClean = String(p.cat).toLowerCase().trim().replace(/[,\s./_]+/g, '-');
 
-        let localPaths = [
+        let localPaths = [];
+
+        // 1. Prioritize Google Drive / Cloud links already saved in your sheet
+        if (p.imgUrl && String(p.imgUrl).startsWith("http")) {
+            let driveLink = p.imgUrl;
+            // Ensure proper format for Drive links to avoid security blocks
+            if (driveLink.includes("drive.google.com")) {
+                const match1 = driveLink.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                const match2 = driveLink.match(/id=([a-zA-Z0-9_-]+)/);
+                const fileId = match1 ? match1[1] : (match2 ? match2[1] : null);
+                if (fileId) driveLink = `https://drive.google.com/uc?export=view&id=${fileId}`;
+            }
+            localPaths.push(driveLink);
+        }
+
+        // 2. Check local PC folder for all common naming patterns and extensions
+        localPaths.push(
             `fabrication-img/${bClean}-${nClean}.jpg`,
+            `fabrication-img/${bClean}-${nClean}.jpeg`,
+            `fabrication-img/${bClean}-${nClean}.png`,
+            `fabrication-img/${bClean}-${nClean}.webp`,
             `fabrication-img/${nClean}.jpg`,
+            `fabrication-img/${nClean}.jpeg`,
             `fabrication-img/${nClean}.png`,
-            `fabrication-img/${bClean}-${nClean}.png`
-        ];
+            `fabrication-img/${nClean}.webp`,
+            `fabrication-img/${bClean}.jpg`, // Fallback to brand image
+            `fabrication-img/${cClean}.jpg`  // Fallback to category image
+        );
 
         try {
             showToast(`[${i+1}/${untagged.length}] Calculating math for ${p.name}...`, "info");
             
-            // 1. Grab the image physically from your PC
+            // 1. Grab the image physically from your PC or Drive
             const img = await loadLocalImageElement(localPaths);
             
             // 2. Convert the image physical shapes into a 1000-number vector array
@@ -1527,14 +1550,13 @@ async function startVectorSync() {
             
         } catch(e) {
             skippedCount++;
-            console.log(`Skipped ${p.name}: No local image file found.`);
+            console.log(`Skipped ${p.name}: No image file found.`);
         }
     }
     
-    alert(`Visual Indexing Complete!\n\n✅ Saved Math Vectors: ${successCount}\n⏭️ Skipped (No local image): ${skippedCount}`);
+    alert(`Visual Indexing Complete!\n\n✅ Saved Math Vectors: ${successCount}\n⏭️ Skipped (No image found): ${skippedCount}`);
     if (typeof loadManagerData === "function") loadManagerData();
 }
-
 // Helper to load image securely for TensorFlow
 function loadLocalImageElement(urls) {
     return new Promise((resolve, reject) => {
