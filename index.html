@@ -315,8 +315,7 @@
             </svg>
         </button>
         <!-- Hidden file input that triggers the phone camera -->
-        <input type="file" id="searchCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCameraPartCapture(event)">
-
+        <input type="file" id="searchCameraInput" accept="image/*, android/force-camera" capture="environment" style="display:none;" onchange="handleCameraPartCapture(event)">
         <button class="clear-search" onclick="clearSearch()">&times;</button>
     </div>
 </div>
