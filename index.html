@@ -11,7 +11,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Fabrication Materials - Hatimi Hardware</title>
-    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
     <style>
     /* Force the bot to stay within the screen boundaries on mobile */
     #tars-widget-container.mobile {
@@ -107,7 +108,8 @@
     .promo-viewport {
         width: 100%;
         overflow: hidden;
-        background: #000000; /* Black background matching wholesale */
+        background: #f8fafc; /* A premium, soft light-grey instead of harsh black */
+        border-radius: 16px; /* Adds modern, smooth rounded corners */
     }
     
     .promo-slides-track {
@@ -273,6 +275,23 @@
         .modal-footer { display: flex; flex-direction: column; width: 100%; gap: 10px; border: none; padding: 10px 0 0 0; }
         .whatsapp-btn { width: 100%; justify-content: center; }
     }
+    /* --- SEARCH BAR CAMERA ICON STYLES --- */
+    .camera-search-btn {
+        position: absolute; 
+        right: 48px; /* Sits right next to the clear 'X' button */
+        top: 50%; 
+        transform: translateY(-50%); 
+        background: transparent; 
+        border: none; 
+        cursor: pointer; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        padding: 5px;
+        color: #b38728;
+        transition: 0.2s;
+    }
+    .camera-search-btn:hover { color: #8e6b1f; transform: translateY(-50%) scale(1.1); }
     </style>
 </head>
 <body>
@@ -283,10 +302,21 @@
     <span>Call Shop</span>
 </a>
 
-<!-- 1. FLOATING SEARCH BAR -->
+<!-- 1. FLOATING SEARCH BAR WITH CAMERA -->
 <div class="search-container no-print">
     <div class="search-wrap">
-        <input type="text" id="searchInput" class="search-box" placeholder="Search fabrication materials..." onkeyup="filterProducts()" oninput="toggleClearBtn(this)">
+        <input type="text" id="searchInput" class="search-box" placeholder="Search or snap a photo of part..." onkeyup="filterProducts()" oninput="toggleClearBtn(this)">
+        
+        <!-- Camera Icon Button -->
+        <button class="camera-search-btn" onclick="document.getElementById('searchCameraInput').click()" title="Snap photo of part">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+        </button>
+        <!-- Hidden file input that triggers the phone camera -->
+        <input type="file" id="searchCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCameraPartCapture(event)">
+
         <button class="clear-search" onclick="clearSearch()">&times;</button>
     </div>
 </div>
@@ -479,7 +509,8 @@ async function loadFabricationData() {
                 purchase: c[5] ? String(c[5]).replace(/[₹\s,"]/g, '').trim() : "0",
                 mrp:      c[6] ? String(c[6]).replace(/[₹\s,"]/g, '').trim() : "0",
                 rate:     c[7] ? String(c[7]).replace(/[₹\s,"]/g, '').trim() : "0",
-                promo:    c[8] ? String(c[8]).replace(/[%\s,"]/g, '').trim() : "0" // <-- RESTORED PROMO EXTRACTION
+                promo:    c[8] ? String(c[8]).replace(/[%\s,"]/g, '').trim() : "0",
+                vector:   c[10] ? String(c[10]).replace(/(^"|"$)/g, '').trim() : "" // <-- NEW: GRABS COLUMN K (Math Vectors)
             };
         }).filter(p => p !== null);
 
@@ -1066,7 +1097,6 @@ window.addEventListener('popstate', function(event) {
         productModal.style.display = "none"; refreshGlobalCart(); return;
     }
 });
-
 // --- PROMO CAROUSEL ENGINE ---
 let currentPromoIndex = 0;
 let promoInterval;
@@ -1079,36 +1109,31 @@ function renderPromoCarousel(promos) {
 
     let slidesHtml = "";
     promos.forEach(p => {
-        // Default placeholder
         let foundLink = `https://placehold.co/1200x450/1a2942/b38728?text=${encodeURIComponent(p.name)}`;
         
-        // 1. Search for the link
         let rawLink = "";
-        if (p.image && p.image.includes("drive.google")) {
-            rawLink = p.image;
-        } else {
-            for (const key in p) {
-                const val = String(p[key]).trim();
-                if (val.includes("drive.google.com") || (val.startsWith("http") && val.match(/\.(jpeg|jpg|gif|png)$/))) {
-                    rawLink = val; break;
-                }
+        for (const key in p) {
+            const val = String(p[key]).trim();
+            if (val.startsWith("http") && (val.includes("google") || val.includes("drive") || val.match(/\.(jpeg|jpg|gif|png|webp)$/i))) {
+                rawLink = val; 
+                break;
             }
         }
 
-        // 2. THE MAGIC CONVERTER: Turns Google Drive Viewer Links into Direct Image Links
-        if (rawLink.includes('drive.google.com')) {
-            const match1 = rawLink.match(/\/d\/([a-zA-Z0-9_-]+)/); // Looks for standard links
-            const match2 = rawLink.match(/id=([a-zA-Z0-9_-]+)/);   // Looks for alternate links
+        if (rawLink.includes('drive.google.com') || rawLink.includes('docs.google.com')) {
+            const match1 = rawLink.match(/\/d\/([a-zA-Z0-9_-]+)/); 
+            const match2 = rawLink.match(/id=([a-zA-Z0-9_-]+)/);   
             const fileId = match1 ? match1[1] : (match2 ? match2[1] : null);
             
             if (fileId) {
                 foundLink = `https://drive.google.com/uc?export=view&id=${fileId}`;
+            } else {
+                foundLink = rawLink;
             }
         } else if (rawLink.startsWith("http")) {
             foundLink = rawLink;
         }
 
-        // 3. Added an 'onerror' safety net just in case the Google Drive is locked!
         slidesHtml += `
             <div class="promo-slide">
                 <img src="${foundLink}" alt="${p.name}" onerror="this.src='https://placehold.co/1200x450/1a2942/ef4444?text=Drive+Access+Denied'">
@@ -1144,6 +1169,7 @@ function startPromoAutoSlide() {
     clearInterval(promoInterval);
     promoInterval = setInterval(() => { changePromoSlide(1); }, 5000); 
 }
+
 function generatePromoCatalogue() {
     let html = `<div class="promo-print-wrapper" style="padding: 40px; font-family: sans-serif; background: #f3f4f6; position: absolute; top: 0; left: 0; width: 100%; min-height: 100vh; z-index: 999999;">
         <div style="max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
@@ -1154,7 +1180,6 @@ function generatePromoCatalogue() {
             </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">`;
 
-    // Filter for items that actually have a promo applied
     const promoItems = allProducts.filter(p => parseFloat(p.promo) > 0);
 
     if(promoItems.length === 0) {
@@ -1180,6 +1205,100 @@ function generatePromoCatalogue() {
 
     html += `</div></div></div>`;
     document.body.insertAdjacentHTML('beforeend', html);
+}
+// --- CAMERA SNAP & INQUIRY ENGINE ---
+let capturedPartImage = null;
+
+// --- 1. THE MATH FORMULA FOR SHAPE MATCHING ---
+function cosineSimilarity(vecA, vecB) {
+    let dotProduct = 0, normA = 0, normB = 0;
+    for (let i = 0; i < vecA.length; i++) {
+        dotProduct += vecA[i] * vecB[i];
+        normA += vecA[i] * vecA[i];
+        normB += vecB[i] * vecB[i];
+    }
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+// --- 2. THE TENSORFLOW CAMERA SEARCH ---
+async function handleCameraPartCapture(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const searchInput = document.getElementById('searchInput') || document.getElementById('inventory-search');
+    searchInput.value = "Calculating visual match... 📐";
+    if (typeof toggleClearBtn === "function") toggleClearBtn(searchInput);
+    if (typeof showCameraToast === "function") showCameraToast("Initializing Visual AI...");
+
+    try {
+        // Load the AI model in the customer's browser
+        const model = await mobilenet.load({version: 2, alpha: 1.0});
+
+        // Read the customer's photo
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        await new Promise(r => img.onload = r);
+
+        // Convert the customer's photo into a math vector
+        const embeddings = model.infer(img, true);
+        const cameraVector = Array.from(embeddings.dataSync());
+
+        let bestMatch = "";
+        let highestScore = -1;
+
+        // Compare the camera math against every product's math in the database
+        allProducts.forEach(p => {
+            if (p.vector && String(p.vector).startsWith("[")) {
+                let itemVector = JSON.parse(p.vector); 
+                let score = cosineSimilarity(cameraVector, itemVector);
+                
+                // If it's a closer match than the previous one, save it!
+                if (score > highestScore) {
+                    highestScore = score;
+                    bestMatch = p.name;
+                }
+            }
+        });
+
+        // Ensure the match is at least 50% accurate before showing it
+        if (bestMatch !== "" && highestScore > 0.50) {
+            searchInput.value = bestMatch;
+            if (typeof filterProducts === "function") filterProducts();
+            if (typeof showCameraToast === "function") showCameraToast(`✅ Perfect Match Found!`);
+        } else {
+            if (typeof showCameraToast === "function") showCameraToast("❌ Item not recognized.");
+            searchInput.value = "";
+            if (typeof filterProducts === "function") filterProducts();
+        }
+
+    } catch (err) {
+        console.error(err);
+        if (typeof showCameraToast === "function") showCameraToast("❌ Error calculating match.");
+        searchInput.value = "";
+    }
+}
+// --- MISSING TOAST NOTIFICATION FOR CAMERA (FIXED TIMERS) ---
+let cameraToastTimer; // This variable tracks the timer
+
+function showCameraToast(message) {
+    let toast = document.getElementById("camera-toast");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "camera-toast";
+        toast.style.cssText = `position: fixed; top: 80px; left: 50%; transform: translateX(-50%); padding: 12px 24px; background: #1e293b; color: #b38728; border: 2px solid #b38728; border-radius: 50px; font-weight: 800; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; transition: 0.3s ease-in-out; opacity: 0; pointer-events: none;`;
+        document.body.appendChild(toast);
+    }
+    
+    toast.innerHTML = message;
+    toast.style.opacity = "1";
+    
+    // Clear the old timer before starting a new one!
+    clearTimeout(cameraToastTimer);
+    
+    // Set a fresh 3.5-second timer
+    cameraToastTimer = setTimeout(() => { 
+        toast.style.opacity = "0"; 
+    }, 3500);
 }
 // START
 loadFabricationData();
